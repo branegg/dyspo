@@ -421,7 +421,11 @@ export default function AdminDashboard() {
             year={currentDate.getFullYear()}
             month={currentDate.getMonth() + 1}
             availability={availability}
-            initialSchedule={schedule?.assignments || []}
+            initialSchedule={schedule?.assignments.map(assignment => ({
+              day: assignment.day,
+              bagiety: assignment.bagiety?.userId,
+              widok: assignment.widok?.userId
+            })) || []}
             onSave={handleSaveSchedule}
             onClose={() => setShowScheduleBuilder(false)}
           />
