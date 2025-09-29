@@ -146,6 +146,35 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDeleteEmployee = async (employee: User) => {
+    if (!confirm(`${t.confirmDelete} ${employee.name}?`)) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/admin/employees?userId=${employee._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(t.employeeDeleted);
+        loadEmployees(token!);
+        loadAvailability(token!);
+        loadSchedule(token!);
+      } else {
+        alert(data.error || t.deleteError);
+      }
+    } catch (error) {
+      alert(t.connectionError);
+    }
+  };
+
   const getAvailableEmployeesForDay = (day: number) => {
     return availability.filter(item => item.availableDays.includes(day));
   };
@@ -482,12 +511,20 @@ export default function AdminDashboard() {
                         {new Date(employee.createdAt).toLocaleDateString('pl-PL')}
                       </td>
                       <td className="border p-3 text-center">
-                        <button
-                          onClick={() => handleEditEmployee(employee)}
-                          className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
-                        >
-                          {t.edit}
-                        </button>
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            onClick={() => handleEditEmployee(employee)}
+                            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
+                          >
+                            {t.edit}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteEmployee(employee)}
+                            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm"
+                          >
+                            {t.delete}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

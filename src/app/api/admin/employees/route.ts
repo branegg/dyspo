@@ -183,3 +183,93 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Błąd serwera' }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
+      return NextResponse.json({ error: 'Brak tokenu autoryzacyjnego' }, { status: 401 });
+    }
+
+    const decoded = verifyToken(token) as any;
+    if (!decoded || decoded.role !== 'admin') {
+      return NextResponse.json({ error: 'Brak uprawnień administratora' }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+      return NextResponse.json({ error: 'ID użytkownika jest wymagane' }, { status: 400 });
+    }
+
+    if (!ObjectId.isValid(userId)) {
+      return NextResponse.json({ error: 'Nieprawidłowe ID użytkownika' }, { status: 400 });
+    }
+
+    const db = await getDatabase();
+
+    // Check if user exists
+    const user = await db.collection<User>('users').findOne({ _id: new ObjectId(userId) });
+    if (!user) {
+      return NextResponse.json({ error: 'Użytkownik nie istnieje' }, { status: 404 });
+    }
+
+    // Prevent deleting admin users
+    if (user.role === 'admin') {
+      return NextResponse.json({ error: 'Nie można usunąć administratora' }, { status: 403 });
+    }
+
+    // Delete user's availability records
+    await db.collection('availability').deleteMany({ userId });
+
+    // Remove user from schedules
+    await db.collection('schedules').updateMany(
+      {
+        $or: [
+          { 'assignments.bagiety': userId },
+          { 'assignments.widok': userId }
+        ]
+      },
+      {
+        $set: {
+          'assignments.$[elem].bagiety': null
+        }
+      },
+      {
+        arrayFilters: [{ 'elem.bagiety': userId }]
+      }
+    );
+
+    await db.collection('schedules').updateMany(
+      {
+        $or: [
+          { 'assignments.bagiety': userId },
+          { 'assignments.widok': userId }
+        ]
+      },
+      {
+        $set: {
+          'assignments.$[elem].widok': null
+        }
+      },
+      {
+        arrayFilters: [{ 'elem.widok': userId }]
+      }
+    );
+
+    // Delete the user
+    const result = await db.collection<User>('users').deleteOne({ _id: new ObjectId(userId) });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json({ error: 'Nie udało się usunąć użytkownika' }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: 'Użytkownik został usunięty' }, { status: 200 });
+  } catch (error) {
+    console.error('Delete employee error:', error);
+    return NextResponse.json({ error: 'Błąd serwera' }, { status: 500 });
+  }
+}

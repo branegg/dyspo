@@ -127,6 +127,11 @@ export interface Translations {
   newPassword: string;
   leaveBlankToKeepPassword: string;
   actions: string;
+
+  // Delete employee
+  confirmDelete: string;
+  employeeDeleted: string;
+  deleteError: string;
 }
 
 export const translations: Record<string, Translations> = {
@@ -261,7 +266,12 @@ export const translations: Record<string, Translations> = {
     editEmployee: 'Edytuj Pracownika',
     newPassword: 'Nowe hasło',
     leaveBlankToKeepPassword: 'Zostaw puste aby zachować obecne hasło',
-    actions: 'Akcje'
+    actions: 'Akcje',
+
+    // Delete employee
+    confirmDelete: 'Czy na pewno chcesz usunąć pracownika',
+    employeeDeleted: 'Pracownik został usunięty',
+    deleteError: 'Błąd podczas usuwania pracownika'
   },
 
   en: {
@@ -395,6 +405,11 @@ export const translations: Record<string, Translations> = {
     editEmployee: 'Edit Employee',
     newPassword: 'New password',
     leaveBlankToKeepPassword: 'Leave blank to keep current password',
-    actions: 'Actions'
+    actions: 'Actions',
+
+    // Delete employee
+    confirmDelete: 'Are you sure you want to delete employee',
+    employeeDeleted: 'Employee has been deleted',
+    deleteError: 'Error deleting employee'
   }
 };
