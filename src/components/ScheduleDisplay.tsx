@@ -7,12 +7,12 @@ import UnifiedCalendar from './UnifiedCalendar';
 interface DayAssignmentWithUsers {
   day: number;
   bagiety?: {
-    _id: string;
+    userId: string;
     name: string;
     email: string;
   } | null;
   widok?: {
-    _id: string;
+    userId: string;
     name: string;
     email: string;
   } | null;
@@ -110,7 +110,7 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
     const assignment = getAssignmentForDay(day);
     if (!assignment) return false;
 
-    return (assignment.bagiety?._id === userId) || (assignment.widok?._id === userId);
+    return (assignment.bagiety?.userId === userId) || (assignment.widok?.userId === userId);
   };
 
   const getUserAssignmentForDay = (day: number) => {
@@ -119,8 +119,8 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
     if (!assignment) return null;
 
     const locations = [];
-    if (assignment.bagiety?._id === userId) locations.push(t.bagiety);
-    if (assignment.widok?._id === userId) locations.push(t.widok);
+    if (assignment.bagiety?.userId === userId) locations.push(t.bagiety);
+    if (assignment.widok?.userId === userId) locations.push(t.widok);
 
     return locations;
   };
@@ -267,7 +267,7 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
         <div className="space-y-1.5 w-full">
           {!isTuesday && (
             <div className={`rounded px-1.5 py-1 text-center ${
-              isUserAssigned && assignment?.bagiety?._id === userId
+              isUserAssigned && assignment?.bagiety?.userId === userId
                 ? 'bg-green-500 text-white font-semibold'
                 : 'bg-blue-100 border border-blue-300'
             }`}>
@@ -278,7 +278,7 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
             </div>
           )}
           <div className={`rounded px-1.5 py-1 text-center ${
-            isUserAssigned && assignment?.widok?._id === userId
+            isUserAssigned && assignment?.widok?.userId === userId
               ? 'bg-green-500 text-white font-semibold'
               : 'bg-purple-100 border border-purple-300'
           }`}>
