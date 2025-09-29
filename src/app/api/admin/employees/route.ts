@@ -124,7 +124,7 @@ export async function PUT(request: NextRequest) {
     const db = await getDatabase();
 
     // Check if user exists
-    const user = await db.collection<User>('users').findOne({ _id: new ObjectId(userId) });
+    const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
     if (!user) {
       return NextResponse.json({ error: 'Użytkownik nie istnieje' }, { status: 404 });
     }
@@ -138,7 +138,7 @@ export async function PUT(request: NextRequest) {
 
     if (email !== undefined && email.trim()) {
       // Check if email is already taken by another user
-      const existingUser = await db.collection<User>('users').findOne({
+      const existingUser = await db.collection('users').findOne({
         email: email.trim(),
         _id: { $ne: new ObjectId(userId) }
       });
@@ -168,7 +168,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update user
-    const result = await db.collection<User>('users').updateOne(
+    const result = await db.collection('users').updateOne(
       { _id: new ObjectId(userId) },
       { $set: updateData }
     );
@@ -212,7 +212,7 @@ export async function DELETE(request: NextRequest) {
     const db = await getDatabase();
 
     // Check if user exists
-    const user = await db.collection<User>('users').findOne({ _id: new ObjectId(userId) });
+    const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
     if (!user) {
       return NextResponse.json({ error: 'Użytkownik nie istnieje' }, { status: 404 });
     }
@@ -261,7 +261,7 @@ export async function DELETE(request: NextRequest) {
     );
 
     // Delete the user
-    const result = await db.collection<User>('users').deleteOne({ _id: new ObjectId(userId) });
+    const result = await db.collection('users').deleteOne({ _id: new ObjectId(userId) });
 
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: 'Nie udało się usunąć użytkownika' }, { status: 500 });
