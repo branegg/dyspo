@@ -19,12 +19,20 @@ export default function Home() {
             <p className="text-gray-600 mb-6">
               Zaloguj się aby podać swoją dyspozycyjność na nadchodzący miesiąc
             </p>
-            <a
-              href="/employee/login"
-              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Zaloguj się jako pracownik
-            </a>
+            <div className="space-y-3">
+              <a
+                href="/employee/login"
+                className="block w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors text-center"
+              >
+                Zaloguj się
+              </a>
+              <a
+                href="/employee/register"
+                className="block w-full bg-white text-blue-600 border-2 border-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors text-center"
+              >
+                Załóż konto
+              </a>
+            </div>
           </div>
 
           <div className="bg-white rounded-lg shadow-lg p-8">

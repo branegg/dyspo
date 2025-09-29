@@ -1,14 +1,22 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function EmployeeLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('registered') === 'true') {
+      setSuccess('Konto zostało utworzone! Możesz się teraz zalogować.');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +91,12 @@ export default function EmployeeLogin() {
             />
           </div>
 
+          {success && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+              {success}
+            </div>
+          )}
+
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
               {error}
@@ -99,7 +113,16 @@ export default function EmployeeLogin() {
         </form>
 
         <div className="mt-6 text-center">
-          <a href="/" className="text-blue-600 hover:underline">
+          <p className="text-gray-600">
+            Nie masz jeszcze konta?{' '}
+            <a href="/employee/register" className="text-blue-600 hover:underline">
+              Zarejestruj się
+            </a>
+          </p>
+        </div>
+
+        <div className="mt-4 text-center">
+          <a href="/" className="text-blue-600 hover:underline text-sm">
             Powrót do strony głównej
           </a>
         </div>
