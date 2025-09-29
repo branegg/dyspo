@@ -1,76 +1,76 @@
-# System Dyspozycyjności Pracowników - Claude Code
+# Employee Availability System - Claude Code
 
-## Opis Projektu
+## Project Description
 
-Aplikacja webowa do zarządzania dyspozycyjnością pracowników z panelem administratora, stworzona przy użyciu Next.js, TypeScript, MongoDB i Tailwind CSS.
+Web application for managing employee availability with an admin panel, built using Next.js, TypeScript, MongoDB, and Tailwind CSS.
 
-## Technologie
+## Technologies
 
 - **Frontend**: Next.js 14 App Router, TypeScript, Tailwind CSS
 - **Backend**: Next.js API Routes
-- **Baza danych**: MongoDB Atlas
-- **Autentykacja**: JWT tokens, bcrypt
+- **Database**: MongoDB Atlas
+- **Authentication**: JWT tokens, bcrypt
 - **Deployment**: Vercel
-- **Narzędzia**: Git, GitHub CLI, Vercel CLI
+- **Tools**: Git, GitHub CLI, Vercel CLI
 
-## Struktura Projektu
+## Project Structure
 
 ```
 src/
 ├── app/
 │   ├── api/
 │   │   ├── auth/
-│   │   │   ├── login/route.ts       # Logowanie użytkowników
-│   │   │   └── register/route.ts    # Rejestracja użytkowników
+│   │   │   ├── login/route.ts       # User login
+│   │   │   └── register/route.ts    # User registration
 │   │   ├── admin/
-│   │   │   ├── availability/route.ts # Admin - pobieranie dyspozycyjności
-│   │   │   ├── employees/route.ts    # Admin - zarządzanie pracownikami
-│   │   │   └── schedule/route.ts     # Admin - budowanie grafiku
-│   │   └── availability/route.ts     # Pracownik - dyspozycyjność
+│   │   │   ├── availability/route.ts # Admin - fetch availability
+│   │   │   ├── employees/route.ts    # Admin - manage employees
+│   │   │   └── schedule/route.ts     # Admin - build schedule
+│   │   └── availability/route.ts     # Employee - availability
 │   ├── employee/
-│   │   ├── login/page.tsx           # Logowanie pracownika
-│   │   ├── register/page.tsx        # Rejestracja pracownika
-│   │   └── dashboard/page.tsx       # Panel pracownika
+│   │   ├── login/page.tsx           # Employee login
+│   │   ├── register/page.tsx        # Employee registration
+│   │   └── dashboard/page.tsx       # Employee panel
 │   ├── admin/
-│   │   ├── login/page.tsx           # Logowanie admina
-│   │   └── dashboard/page.tsx       # Panel administratora
-│   ├── layout.tsx                   # Layout aplikacji
-│   ├── page.tsx                     # Strona główna
-│   └── globals.css                  # Style globalne
+│   │   ├── login/page.tsx           # Admin login
+│   │   └── dashboard/page.tsx       # Admin panel
+│   ├── layout.tsx                   # App layout
+│   ├── page.tsx                     # Home page
+│   └── globals.css                  # Global styles
 ├── components/
-│   ├── Calendar.tsx                 # Komponent kalendarza
-│   ├── AddEmployeeModal.tsx         # Modal dodawania pracowników
-│   └── ScheduleBuilder.tsx          # Modal budowania grafiku
+│   ├── Calendar.tsx                 # Calendar component
+│   ├── AddEmployeeModal.tsx         # Add employee modal
+│   └── ScheduleBuilder.tsx          # Schedule builder modal
 ├── lib/
-│   ├── mongodb.ts                   # Połączenie z MongoDB
-│   └── auth.ts                      # Funkcje autentykacji
+│   ├── mongodb.ts                   # MongoDB connection
+│   └── auth.ts                      # Authentication functions
 └── types/
-    └── index.ts                     # Definicje typów TypeScript
+    └── index.ts                     # TypeScript type definitions
 ```
 
-## Funkcjonalności
+## Features
 
-### Panel Pracownika
-- **Rejestracja samodzielna** - Pracownicy mogą sami założyć konto
-- **Logowanie z email/hasło** - Bezpieczna autentykacja JWT
-- **Kalendarz miesięczny** - Intuicyjne zaznaczanie dostępnych dni
-- **Zapis i edycja dyspozycyjności** - Natychmiastowe zapisywanie w bazie
-- **Nawigacja między miesiącami** - Planowanie na przyszłe okresy
-- **Bezpieczne wylogowanie** - Zarządzanie sesjami
+### Employee Panel
+- **Self-registration** - Employees can create their own accounts
+- **Email/password login** - Secure JWT authentication
+- **Monthly calendar** - Intuitive selection of available days
+- **Save and edit availability** - Immediate database persistence
+- **Navigate between months** - Planning for future periods
+- **Secure logout** - Session management
 
-### Panel Administratora
-- **Logowanie z uprawnieniami administratora** - Osobne konto admin
-- **Przeglądanie dyspozycyjności** - Wszystkich pracowników w jednym miejscu
-- **Tabela dostępności** - Przejrzysty widok na dany miesiąc
-- **Podsumowanie kalendarza** - Wizualizacja liczby dostępnych pracowników
-- **Dodawanie pracowników** - Modal do tworzenia nowych kont
-- **Lista pracowników** - Zarządzanie zespołem z datami rejestracji
-- **Budowanie grafiku pracy** - Przydzielanie pracowników do lokali
-- **Obsługa dwóch lokali** - Bagiety i Widok z regułami biznesowymi
-- **Specjalne zasady** - Wtorki bez pracy na Bagiety
-- **Zarządzanie miesiącami** - Planowanie na różne okresy
+### Admin Panel
+- **Admin login** - Separate admin account
+- **View availability** - All employees in one place
+- **Availability table** - Clear view for each month
+- **Calendar summary** - Visualization of available employee count
+- **Add employees** - Modal for creating new accounts
+- **Employee list** - Team management with registration dates
+- **Build work schedule** - Assign employees to locations
+- **Two location support** - Bagiety and Widok with business rules
+- **Special rules** - No work on Tuesdays at Bagiety
+- **Month management** - Planning for different periods
 
-## Modele Danych
+## Data Models
 
 ### User
 ```typescript
@@ -117,32 +117,32 @@ interface DayAssignment {
 
 ## API Endpoints
 
-### Autentykacja
-- `POST /api/auth/login` - Logowanie użytkownika
-- `POST /api/auth/register` - Rejestracja nowego użytkownika
+### Authentication
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - Register new user
 
-### Pracownik
-- `GET /api/availability` - Pobieranie dyspozycyjności
-- `POST /api/availability` - Zapisywanie dyspozycyjności
+### Employee
+- `GET /api/availability` - Fetch availability
+- `POST /api/availability` - Save availability
 
 ### Administrator
-- `GET /api/admin/availability` - Pobieranie dyspozycyjności wszystkich pracowników
-- `GET /api/admin/employees` - Lista wszystkich pracowników
-- `POST /api/admin/employees` - Tworzenie nowych pracowników
-- `GET /api/admin/schedule` - Pobieranie grafiku pracy z danymi użytkowników
-- `POST /api/admin/schedule` - Zapisywanie/aktualizacja grafiku pracy
+- `GET /api/admin/availability` - Fetch all employee availability
+- `GET /api/admin/employees` - List all employees
+- `POST /api/admin/employees` - Create new employees
+- `GET /api/admin/schedule` - Fetch work schedule with user data
+- `POST /api/admin/schedule` - Save/update work schedule
 
-## Bezpieczeństwo
+## Security
 
-- Hashowanie haseł za pomocą bcrypt
-- Tokeny JWT z czasem wygaśnięcia
-- Weryfikacja uprawnień na poziomie API
-- Walidacja danych wejściowych
-- Zabezpieczenie przed duplikatami email
+- Password hashing with bcrypt
+- JWT tokens with expiration
+- Permission verification at API level
+- Input data validation
+- Email duplicate protection
 
-## Konfiguracja
+## Configuration
 
-### Zmienne Środowiskowe
+### Environment Variables
 ```env
 MONGODB_URI=mongodb+srv://...
 JWT_SECRET=your-jwt-secret-key
@@ -151,90 +151,95 @@ NEXTAUTH_SECRET=your-nextauth-secret
 ```
 
 ### MongoDB Collections
-- `users` - dane użytkowników (pracownicy i administratorzy)
-- `availability` - dyspozycyjność pracowników na poszczególne miesiące
-- `schedules` - grafiki pracy z przydziałami do lokali
+- `users` - user data (employees and administrators)
+- `availability` - employee availability for specific months
+- `schedules` - work schedules with location assignments
 
 ## Deployment
 
-Aplikacja jest automatycznie deployowana na Vercel przy każdym push do głównej gałęzi GitHub.
+Application is automatically deployed to Vercel on every push to the main GitHub branch.
 
-**URL Produkcyjny**: https://dyspo-branegais-projects.vercel.app
+**Production URL**: https://dyspo-branegais-projects.vercel.app
 
-### Proces Deployment
-1. Push do GitHub
-2. Vercel automatycznie wykrywa zmiany
-3. Build i deploy aplikacji Next.js
-4. Aktualizacja zmiennych środowiskowych w Vercel
+### Deployment Process
+1. Push to GitHub
+2. Vercel automatically detects changes
+3. Build and deploy Next.js app
+4. Update environment variables in Vercel
 
-## Użytkowanie
+## Usage
 
-### Dla Administratorów
-1. **Logowanie** na `/admin/login`
-2. **Dodawanie pracowników** przez przycisk "Dodaj Pracownika"
-3. **Przeglądanie dyspozycyjności** w tabeli i kalendarzu
-4. **Budowanie grafiku** przez przycisk "Buduj Grafik"
-5. **Przydzielanie do lokali** - Bagiety i Widok dla każdego dnia
-6. **Zarządzanie listą pracowników** z datami rejestracji
+### For Administrators
+1. **Login** at `/admin/login`
+2. **Add employees** via "Add Employee" button
+3. **View availability** in table and calendar
+4. **Build schedule** via "Build Schedule" button
+5. **Assign to locations** - Bagiety and Widok for each day
+6. **Manage employee list** with registration dates
 
-### Dla Pracowników
-1. **Rejestracja** na `/employee/register` (opcjonalnie)
-2. **Logowanie** na `/employee/login`
-3. **Wybór dostępnych dni** w kalendarzu miesięcznym
-4. **Zapisanie dyspozycyjności** przyciskiem "Zapisz"
-5. **Edycja w dowolnym momencie** - aktualizacja istniejącej dyspozycyjności
+### For Employees
+1. **Register** at `/employee/register` (optional)
+2. **Login** at `/employee/login`
+3. **Select available days** in monthly calendar
+4. **Save availability** with "Save" button
+5. **Edit anytime** - update existing availability
 
-## Komendy Deweloperskie
+## Development Commands
 
 ```bash
-# Instalacja zależności
+# Install dependencies
 npm install
 
-# Uruchomienie lokalnie
+# Run locally
 npm run dev
 
-# Build produkcyjny
+# Production build
 npm run build
 
 # Linting
 npm run lint
 
-# Deployment Vercel
+# Vercel deployment
 vercel --prod
 
-# Dodanie zmiennych środowiskowych
+# Add environment variables
 vercel env add MONGODB_URI production
 ```
 
 ## Git Workflow
 
-Wszystkie zmiany commitowane z opisowymi wiadomościami zawierającymi:
-- Opis funkcjonalności
+All changes committed with descriptive messages containing:
+- Feature description
 - 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 - Co-Authored-By: Claude <noreply@anthropic.com>
 
-## Historia Rozwoju
+## Development History
 
-1. **Inicjalizacja projektu** - setup Next.js z TypeScript i Tailwind
-2. **Konfiguracja MongoDB** - połączenie i modele danych
-3. **System autentykacji** - JWT, hashing, API endpoints
-4. **Panel pracownika** - kalendarz, dyspozycyjność
-5. **Panel administratora** - przeglądanie danych
-6. **Zarządzanie pracownikami** - dodawanie przez admina
-7. **Poprawki deployment** - Vercel config, MongoDB lookup
+1. **Project initialization** - Next.js setup with TypeScript and Tailwind
+2. **MongoDB configuration** - connection and data models
+3. **Authentication system** - JWT, hashing, API endpoints
+4. **Employee panel** - calendar, availability
+5. **Admin panel** - data viewing
+6. **Employee management** - adding by admin
+7. **Deployment fixes** - Vercel config, MongoDB lookup
 
-## Przyszłe Rozszerzenia
+## Future Extensions
 
-Potencjalne funkcjonalności do dodania:
-- Powiadomienia email
-- Export dyspozycyjności do CSV/PDF
-- Statystyki i raporty
-- Szabłony dyspozycyjności
-- Integracja z kalendarzami zewnętrznymi
-- Aplikacja mobilna (React Native)
+Potential features to add:
+- Email notifications
+- Export availability to CSV/PDF
+- Statistics and reports
+- Availability templates
+- Integration with external calendars
+- Mobile app (React Native)
 
-## Autorzy
+## Authors
 
-Projekt stworzony przy współpracy z Claude Code - AI asystentem deweloperskim od Anthropic.
+Project created in collaboration with Claude Code - AI development assistant from Anthropic.
 - always commit and push the changes
 - always use i18n, never hardcoded copy
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
