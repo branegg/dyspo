@@ -100,6 +100,8 @@ export default function AdminDashboard() {
             widok: assignment.widok?.userId || undefined
           };
         });
+        console.log('Loaded assignments:', assignments);
+        console.log('Employees:', employees);
         setSelectedAssignments(assignments);
       } else {
         setSchedule(null);
@@ -123,8 +125,8 @@ export default function AdminDashboard() {
 
   const getUserName = (userId: string | undefined) => {
     if (!userId) return null;
-    const user = availability.find(item => item.userId === userId);
-    return user?.user?.name || null;
+    const employee = employees.find(emp => emp._id === userId);
+    return employee?.name || null;
   };
 
   const openDayModal = (day: number) => {
