@@ -24,78 +24,49 @@ export async function GET(request: NextRequest) {
 
     const db = await getDatabase();
 
+
+    // Get schedule and manually populate user data
     const schedule = await db.collection('schedules').findOne({ year, month });
 
     if (!schedule) {
       return NextResponse.json({ schedule: null });
     }
 
-    // Populate user data for assignments
-    const scheduleWithUsers = await db.collection('schedules').aggregate([
-      { $match: { year, month } },
-      { $unwind: '$assignments' },
-      {
-        $lookup: {
-          from: 'users',
-          let: { bagietyId: { $toObjectId: '$assignments.bagiety' } },
-          pipeline: [
-            { $match: { $expr: { $eq: ['$_id', '$$bagietyId'] } } },
-            { $project: { name: 1, email: 1 } }
-          ],
-          as: 'bagietyUser'
-        }
-      },
-      {
-        $lookup: {
-          from: 'users',
-          let: { widokId: { $toObjectId: '$assignments.widok' } },
-          pipeline: [
-            { $match: { $expr: { $eq: ['$_id', '$$widokId'] } } },
-            { $project: { name: 1, email: 1 } }
-          ],
-          as: 'widokUser'
-        }
-      },
-      {
-        $addFields: {
-          'assignments.bagiety': {
-            $cond: {
-              if: { $ne: ['$assignments.bagiety', null] },
-              then: {
-                userId: '$assignments.bagiety',
-                name: { $arrayElemAt: ['$bagietyUser.name', 0] },
-                email: { $arrayElemAt: ['$bagietyUser.email', 0] }
-              },
-              else: null
-            }
-          },
-          'assignments.widok': {
-            $cond: {
-              if: { $ne: ['$assignments.widok', null] },
-              then: {
-                userId: '$assignments.widok',
-                name: { $arrayElemAt: ['$widokUser.name', 0] },
-                email: { $arrayElemAt: ['$widokUser.email', 0] }
-              },
-              else: null
-            }
-          }
-        }
-      },
-      {
-        $group: {
-          _id: '$_id',
-          year: { $first: '$year' },
-          month: { $first: '$month' },
-          createdAt: { $first: '$createdAt' },
-          updatedAt: { $first: '$updatedAt' },
-          assignments: { $push: '$assignments' }
-        }
-      }
-    ]).toArray();
+    // Get all users for lookup
+    const userIds = [];
+    schedule.assignments.forEach((assignment: any) => {
+      if (assignment.bagiety) userIds.push(assignment.bagiety);
+      if (assignment.widok) userIds.push(assignment.widok);
+    });
+
+    const users = await db.collection('users').find({
+      _id: { $in: userIds.map((id: string) => new ObjectId(id)) }
+    }).toArray();
+
+    // Create user lookup map
+    const userMap = new Map();
+    users.forEach((user: any) => {
+      userMap.set(user._id.toString(), {
+        userId: user._id.toString(),
+        name: user.name,
+        email: user.email
+      });
+    });
+
+    // Populate assignments with user data
+    const populatedAssignments = schedule.assignments.map((assignment: any) => ({
+      day: assignment.day,
+      bagiety: assignment.bagiety ? userMap.get(assignment.bagiety) || null : null,
+      widok: assignment.widok ? userMap.get(assignment.widok) || null : null
+    }));
+
+    const scheduleWithUsers = {
+      ...schedule,
+      assignments: populatedAssignments
+    };
 
     return NextResponse.json({
-      schedule: scheduleWithUsers.length > 0 ? scheduleWithUsers[0] : null
+      schedule: scheduleWithUsers
     });
   } catch (error) {
     console.error('Get schedule error:', error);
@@ -119,7 +90,6 @@ export async function POST(request: NextRequest) {
 
     const { year, month, assignments } = await request.json();
 
-    console.log('Schedule save request:', { year, month, assignmentsCount: assignments?.length });
 
     if (!year || !month || !Array.isArray(assignments)) {
       return NextResponse.json(
@@ -136,7 +106,6 @@ export async function POST(request: NextRequest) {
       assignment.day <= 31
     );
 
-    console.log('Valid assignments:', validAssignments.length, 'out of', assignments.length);
 
     const db = await getDatabase();
 
@@ -149,23 +118,19 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date(),
     };
 
-    console.log('Saving schedule with data:', scheduleData);
 
     if (existingSchedule) {
       const result = await db.collection('schedules').updateOne(
         { year, month },
         { $set: scheduleData }
       );
-      console.log('Updated existing schedule:', result.modifiedCount, 'documents modified');
     } else {
       const result = await db.collection('schedules').insertOne({
         ...scheduleData,
         createdAt: new Date(),
       });
-      console.log('Inserted new schedule with ID:', result.insertedId);
     }
 
-    console.log('Schedule successfully saved for', year, month);
     return NextResponse.json({ message: 'Schedule has been saved' });
   } catch (error) {
     console.error('Save schedule error:', error);

@@ -43,95 +43,51 @@ export async function GET(request: NextRequest) {
 
     const db = await getDatabase();
 
-    const schedule = await db.collection('schedules').aggregate([
-      {
-        $match: { year, month }
-      },
-      {
-        $unwind: '$assignments'
-      },
-      {
-        $lookup: {
-          from: 'users',
-          let: { bagiId: '$assignments.bagiety', widokId: '$assignments.widok' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $or: [
-                    { $eq: [{ $toString: '$_id' }, '$$bagiId'] },
-                    { $eq: [{ $toString: '$_id' }, '$$widokId'] }
-                  ]
-                }
-              }
-            },
-            {
-              $project: { name: 1, email: 1 }
-            }
-          ],
-          as: 'users'
-        }
-      },
-      {
-        $addFields: {
-          'assignments.bagiety': {
-            $cond: {
-              if: { $ne: ['$assignments.bagiety', null] },
-              then: {
-                $arrayElemAt: [
-                  {
-                    $filter: {
-                      input: '$users',
-                      as: 'user',
-                      cond: { $eq: [{ $toString: '$$user._id' }, '$assignments.bagiety'] }
-                    }
-                  },
-                  0
-                ]
-              },
-              else: null
-            }
-          },
-          'assignments.widok': {
-            $cond: {
-              if: { $ne: ['$assignments.widok', null] },
-              then: {
-                $arrayElemAt: [
-                  {
-                    $filter: {
-                      input: '$users',
-                      as: 'user',
-                      cond: { $eq: [{ $toString: '$$user._id' }, '$assignments.widok'] }
-                    }
-                  },
-                  0
-                ]
-              },
-              else: null
-            }
-          }
-        }
-      },
-      {
-        $group: {
-          _id: '$_id',
-          year: { $first: '$year' },
-          month: { $first: '$month' },
-          createdAt: { $first: '$createdAt' },
-          updatedAt: { $first: '$updatedAt' },
-          assignments: { $push: '$assignments' }
-        }
-      }
-    ]).toArray();
 
-    if (schedule.length === 0) {
+    // Get schedule and manually populate user data (simpler approach)
+    const schedule = await db.collection('schedules').findOne({ year, month });
+
+    if (!schedule) {
       return NextResponse.json(
         { error: 'Brak grafiku na ten miesiąc' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(schedule[0]);
+    // Get all users for lookup
+    const userIds = [];
+    schedule.assignments.forEach((assignment: any) => {
+      if (assignment.bagiety) userIds.push(assignment.bagiety);
+      if (assignment.widok) userIds.push(assignment.widok);
+    });
+
+    const users = await db.collection('users').find({
+      _id: { $in: userIds.map((id: string) => new ObjectId(id)) }
+    }).toArray();
+
+    // Create user lookup map
+    const userMap = new Map();
+    users.forEach((user: any) => {
+      userMap.set(user._id.toString(), {
+        _id: user._id.toString(),
+        name: user.name,
+        email: user.email
+      });
+    });
+
+    // Populate assignments with user data
+    const populatedAssignments = schedule.assignments.map((assignment: any) => ({
+      day: assignment.day,
+      bagiety: assignment.bagiety ? userMap.get(assignment.bagiety) || null : null,
+      widok: assignment.widok ? userMap.get(assignment.widok) || null : null
+    }));
+
+    const scheduleWithUsers = {
+      ...schedule,
+      assignments: populatedAssignments
+    };
+
+    return NextResponse.json(scheduleWithUsers);
 
   } catch (error) {
     console.error('Błąd pobierania grafiku:', error);

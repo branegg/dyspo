@@ -89,8 +89,10 @@ export default function AdminDashboard() {
       });
 
       const data = await response.json();
+
       if (response.ok && data.schedule) {
         setSchedule(data.schedule);
+
         // Convert to selectedAssignments format
         const assignments: {[key: number]: DayAssignment} = {};
         data.schedule.assignments.forEach((assignment: DayAssignmentWithUsers) => {
