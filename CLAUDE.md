@@ -236,3 +236,5 @@ Potencjalne funkcjonalności do dodania:
 ## Autorzy
 
 Projekt stworzony przy współpracy z Claude Code - AI asystentem deweloperskim od Anthropic.
+- always commit and push the changes
+- always use i18n, never hardcoded copy

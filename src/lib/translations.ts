@@ -99,6 +99,14 @@ export interface Translations {
   creating: string;
   employeeCreated: string;
   createError: string;
+
+  // Registration specific
+  registrationComplete: string;
+  accountCreatedRedirect: string;
+  minimumCharacters: string;
+  minimumPasswordError: string;
+  namePlaceholderExample: string;
+  repeatPassword: string;
 }
 
 export const translations: Record<string, Translations> = {
@@ -205,7 +213,15 @@ export const translations: Record<string, Translations> = {
     create: 'Utwórz',
     creating: 'Tworzenie...',
     employeeCreated: 'Pracownik został utworzony!',
-    createError: 'Błąd podczas tworzenia pracownika'
+    createError: 'Błąd podczas tworzenia pracownika',
+
+    // Registration specific
+    registrationComplete: 'Rejestracja zakończona!',
+    accountCreatedRedirect: 'Twoje konto zostało utworzone. Za chwilę zostaniesz przekierowany do logowania.',
+    minimumCharacters: 'Minimum 6 znaków',
+    minimumPasswordError: 'Hasło musi mieć co najmniej 6 znaków',
+    namePlaceholderExample: 'Jan Kowalski',
+    repeatPassword: 'Powtórz hasło'
   },
 
   en: {
@@ -311,6 +327,14 @@ export const translations: Record<string, Translations> = {
     create: 'Create',
     creating: 'Creating...',
     employeeCreated: 'Employee has been created!',
-    createError: 'Error creating employee'
+    createError: 'Error creating employee',
+
+    // Registration specific
+    registrationComplete: 'Registration complete!',
+    accountCreatedRedirect: 'Your account has been created. You will be redirected to login shortly.',
+    minimumCharacters: 'Minimum 6 characters',
+    minimumPasswordError: 'Password must be at least 6 characters',
+    namePlaceholderExample: 'John Smith',
+    repeatPassword: 'Repeat password'
   }
 };
