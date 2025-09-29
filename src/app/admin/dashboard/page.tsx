@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AvailabilityWithUser, User, DayAssignment, ScheduleWithUsers, DayAssignmentWithUsers } from '@/types';
 import AddEmployeeModal from '@/components/AddEmployeeModal';
-import InteractiveScheduleCalendar from '@/components/InteractiveScheduleCalendar';
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<any>(null);
@@ -14,6 +13,8 @@ export default function AdminDashboard() {
   const [schedule, setSchedule] = useState<ScheduleWithUsers | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedAssignments, setSelectedAssignments] = useState<{[key: number]: DayAssignment}>({});
+  const [modal, setModal] = useState<{day: number; isOpen: boolean}>({ day: 0, isOpen: false });
   const router = useRouter();
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export default function AdminDashboard() {
     setUser(parsedUser);
     loadAvailability(token);
     loadEmployees(token);
+    loadSchedule(token);
   }, [currentDate]);
 
   const loadAvailability = async (token: string) => {
@@ -75,6 +77,38 @@ export default function AdminDashboard() {
     }
   };
 
+  const loadSchedule = async (token: string) => {
+    try {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+
+      const response = await fetch(`/api/admin/schedule?year=${year}&month=${month}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (response.ok && data.schedule) {
+        setSchedule(data.schedule);
+        // Convert to selectedAssignments format
+        const assignments: {[key: number]: DayAssignment} = {};
+        data.schedule.assignments.forEach((assignment: DayAssignmentWithUsers) => {
+          assignments[assignment.day] = {
+            day: assignment.day,
+            bagiety: assignment.bagiety?.userId || undefined,
+            widok: assignment.widok?.userId || undefined
+          };
+        });
+        setSelectedAssignments(assignments);
+      } else {
+        setSchedule(null);
+        setSelectedAssignments({});
+      }
+    } catch (error) {
+      console.error('Error loading schedule:', error);
+    }
+  };
 
   const handleAddEmployeeSuccess = () => {
     const token = localStorage.getItem('token');
@@ -83,8 +117,78 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleScheduleUpdate = async (assignments: DayAssignment[]) => {
-    // This will be handled by the InteractiveScheduleCalendar component
+  const getAvailableEmployeesForDay = (day: number) => {
+    return availability.filter(item => item.availableDays.includes(day));
+  };
+
+  const getUserName = (userId: string | undefined) => {
+    if (!userId) return null;
+    const user = availability.find(item => item.userId === userId);
+    return user?.user?.name || null;
+  };
+
+  const openDayModal = (day: number) => {
+    const availableCount = availability.reduce((count, item) => {
+      return count + (item.availableDays.includes(day) ? 1 : 0);
+    }, 0);
+
+    if (availableCount > 0) {
+      setModal({ day, isOpen: true });
+    }
+  };
+
+  const closeDayModal = () => {
+    setModal({ day: 0, isOpen: false });
+  };
+
+  const updateDayAssignment = (day: number, bagiety: string | null, widok: string | null) => {
+    // Validation: same person can't be on both locations
+    if (bagiety && widok && bagiety === widok) {
+      alert('Ten sam pracownik nie może być w obu lokalach w tym samym dniu!');
+      return;
+    }
+
+    const newAssignments = {
+      ...selectedAssignments,
+      [day]: {
+        day,
+        bagiety: bagiety || undefined,
+        widok: widok || undefined
+      }
+    };
+    setSelectedAssignments(newAssignments);
+  };
+
+  const saveSchedule = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const assignmentsArray = Object.values(selectedAssignments);
+
+      const response = await fetch('/api/admin/schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          year: currentDate.getFullYear(),
+          month: currentDate.getMonth() + 1,
+          assignments: assignmentsArray
+        }),
+      });
+
+      if (response.ok) {
+        const token = localStorage.getItem('token');
+        if (token) {
+          loadSchedule(token); // Reload to get updated data
+        }
+        alert('Grafik został zapisany!');
+      } else {
+        alert('Błąd podczas zapisywania grafiku');
+      }
+    } catch (error) {
+      alert('Błąd połączenia z serwerem');
+    }
   };
 
   const handleMonthChange = (direction: 'prev' | 'next') => {
@@ -227,7 +331,15 @@ export default function AdminDashboard() {
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <h3 className="text-xl font-bold mb-4">Podsumowanie dostępności</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold">Budowanie Grafiku</h3>
+            <button
+              onClick={saveSchedule}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+            >
+              Zapisz Grafik
+            </button>
+          </div>
           <div className="grid grid-cols-7 gap-2 mb-4">
             {['Pon', 'Wto', 'Śro', 'Czw', 'Pią', 'Sob', 'Nie'].map(day => (
               <div key={day} className="text-center font-semibold text-gray-600 py-2">
@@ -243,27 +355,57 @@ export default function AdminDashboard() {
 
               const dayOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), day).getDay();
               const adjustedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+              const isTuesday = dayOfWeek === 2;
+              const assignment = selectedAssignments[day];
 
               return (
                 <div
                   key={day}
-                  className={`aspect-square border rounded flex items-center justify-center text-sm ${
+                  className={`aspect-square border rounded p-1 text-xs cursor-pointer transition-colors ${
                     availableCount > 0
-                      ? 'bg-green-100 border-green-300'
+                      ? 'bg-blue-50 border-blue-300 hover:bg-blue-100'
                       : 'bg-gray-50 border-gray-200'
-                  }`}
+                  } ${assignment ? 'ring-2 ring-green-300' : ''}`}
                   style={{ gridColumn: day === 1 ? adjustedDay + 1 : undefined }}
+                  onClick={() => openDayModal(day)}
                 >
-                  <div className="text-center">
-                    <div className="font-semibold">{day}</div>
-                    <div className="text-xs text-gray-600">{availableCount}</div>
+                  <div className="text-center h-full flex flex-col justify-between">
+                    <div className="font-semibold text-gray-700">{day}</div>
+
+                    <div className="space-y-1 flex-1 flex flex-col justify-center">
+                      {!isTuesday && (
+                        <div className="text-blue-600">
+                          <div className="font-medium text-xs">B:</div>
+                          <div className="truncate text-xs" title={getUserName(assignment?.bagiety) || ''}>
+                            {getUserName(assignment?.bagiety) || '-'}
+                          </div>
+                        </div>
+                      )}
+                      <div className="text-green-600">
+                        <div className="font-medium text-xs">W:</div>
+                        <div className="truncate text-xs" title={getUserName(assignment?.widok) || ''}>
+                          {getUserName(assignment?.widok) || '-'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {availableCount > 0 && (
+                      <div className="text-xs text-gray-500">
+                        {availableCount} dost.
+                      </div>
+                    )}
                   </div>
                 </div>
               );
             })}
           </div>
-          <div className="mt-4 text-sm text-gray-600 text-center">
-            Liczby pokazują ile pracowników jest dostępnych w danym dniu
+          <div className="mt-4 text-xs text-gray-600">
+            <div className="flex flex-wrap justify-center gap-4">
+              <span><strong>B:</strong> Bagiety</span>
+              <span><strong>W:</strong> Widok</span>
+              <span className="text-orange-600">Wtorki: tylko Widok</span>
+              <span className="text-blue-600">Kliknij dzień aby przydzielić pracowników</span>
+            </div>
           </div>
         </div>
 
@@ -309,20 +451,158 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        <div className="mt-6">
-          <InteractiveScheduleCalendar
-            year={currentDate.getFullYear()}
-            month={currentDate.getMonth() + 1}
-            availability={availability}
-            onScheduleUpdate={handleScheduleUpdate}
-          />
-        </div>
-
         <AddEmployeeModal
           isOpen={showAddModal}
           onClose={() => setShowAddModal(false)}
           onSuccess={handleAddEmployeeSuccess}
         />
+
+        {/* Day Assignment Modal */}
+        {modal.isOpen && (
+          <DayAssignmentModal
+            day={modal.day}
+            year={currentDate.getFullYear()}
+            month={currentDate.getMonth() + 1}
+            availableEmployees={getAvailableEmployeesForDay(modal.day)}
+            currentAssignment={selectedAssignments[modal.day]}
+            onSave={(bagiety, widok) => {
+              updateDayAssignment(modal.day, bagiety, widok);
+              closeDayModal();
+            }}
+            onClose={closeDayModal}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Day Assignment Modal Component
+interface DayAssignmentModalProps {
+  day: number;
+  year: number;
+  month: number;
+  availableEmployees: AvailabilityWithUser[];
+  currentAssignment?: DayAssignment;
+  onSave: (bagiety: string | null, widok: string | null) => void;
+  onClose: () => void;
+}
+
+function DayAssignmentModal({
+  day,
+  year,
+  month,
+  availableEmployees,
+  currentAssignment,
+  onSave,
+  onClose
+}: DayAssignmentModalProps) {
+  const [bagiety, setBagiety] = useState<string>(currentAssignment?.bagiety || '');
+  const [widok, setWidok] = useState<string>(currentAssignment?.widok || '');
+
+  const dayOfWeek = new Date(year, month - 1, day).getDay();
+  const isTuesday = dayOfWeek === 2;
+  const dayNames = ['Niedziela', 'Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota'];
+
+  const handleSave = () => {
+    // Validation
+    if (bagiety && widok && bagiety === widok) {
+      alert('Nie można przydzielić tego samego pracownika do obu lokali!');
+      return;
+    }
+
+    onSave(bagiety || null, widok || null);
+  };
+
+  const clearAssignments = () => {
+    setBagiety('');
+    setWidok('');
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 className="text-lg font-semibold mb-4">
+          Przydziel pracowników - {day} ({dayNames[dayOfWeek]})
+        </h3>
+
+        {availableEmployees.length === 0 ? (
+          <div className="text-center text-gray-500 py-4">
+            Brak dostępnych pracowników na ten dzień
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {!isTuesday && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  🥖 Bagiety
+                </label>
+                <select
+                  value={bagiety}
+                  onChange={(e) => setBagiety(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">-- Nie przydzielono --</option>
+                  {availableEmployees.map((emp) => (
+                    <option key={emp.userId} value={emp.userId}>
+                      {emp.user.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                🌅 Widok
+              </label>
+              <select
+                value={widok}
+                onChange={(e) => setWidok(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">-- Nie przydzielono --</option>
+                {availableEmployees.map((emp) => (
+                  <option key={emp.userId} value={emp.userId}>
+                    {emp.user.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {(bagiety && widok && bagiety === widok) && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-sm">
+                ⚠️ Ten sam pracownik nie może być w obu lokalach!
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="flex justify-between mt-6">
+          <div className="space-x-2">
+            <button
+              onClick={clearAssignments}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              Wyczyść
+            </button>
+          </div>
+          <div className="space-x-2">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              Anuluj
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={!!(bagiety && widok && bagiety === widok)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Zapisz
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
