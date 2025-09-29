@@ -10,12 +10,12 @@ export async function GET(request: NextRequest) {
     const token = authHeader?.replace('Bearer ', '');
 
     if (!token) {
-      return NextResponse.json({ error: 'Brak tokenu autoryzacyjnego' }, { status: 401 });
+      return NextResponse.json({ error: 'Missing authorization token' }, { status: 401 });
     }
 
     const decoded = verifyToken(token) as any;
     if (!decoded || decoded.role !== 'admin') {
-      return NextResponse.json({ error: 'Brak uprawnień administratora' }, { status: 403 });
+      return NextResponse.json({ error: 'No administrator privileges' }, { status: 403 });
     }
 
     const url = new URL(request.url);
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Get schedule error:', error);
-    return NextResponse.json({ error: 'Błąd serwera' }, { status: 500 });
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
 
@@ -109,22 +109,34 @@ export async function POST(request: NextRequest) {
     const token = authHeader?.replace('Bearer ', '');
 
     if (!token) {
-      return NextResponse.json({ error: 'Brak tokenu autoryzacyjnego' }, { status: 401 });
+      return NextResponse.json({ error: 'Missing authorization token' }, { status: 401 });
     }
 
     const decoded = verifyToken(token) as any;
     if (!decoded || decoded.role !== 'admin') {
-      return NextResponse.json({ error: 'Brak uprawnień administratora' }, { status: 403 });
+      return NextResponse.json({ error: 'No administrator privileges' }, { status: 403 });
     }
 
     const { year, month, assignments } = await request.json();
 
+    console.log('Schedule save request:', { year, month, assignmentsCount: assignments?.length });
+
     if (!year || !month || !Array.isArray(assignments)) {
       return NextResponse.json(
-        { error: 'Rok, miesiąc i przydzielenia są wymagane' },
+        { error: 'Year, month and assignments are required' },
         { status: 400 }
       );
     }
+
+    // Validate assignments structure
+    const validAssignments = assignments.filter(assignment =>
+      assignment &&
+      typeof assignment.day === 'number' &&
+      assignment.day > 0 &&
+      assignment.day <= 31
+    );
+
+    console.log('Valid assignments:', validAssignments.length, 'out of', assignments.length);
 
     const db = await getDatabase();
 
@@ -133,25 +145,30 @@ export async function POST(request: NextRequest) {
     const scheduleData = {
       year,
       month,
-      assignments,
+      assignments: validAssignments,
       updatedAt: new Date(),
     };
 
+    console.log('Saving schedule with data:', scheduleData);
+
     if (existingSchedule) {
-      await db.collection('schedules').updateOne(
+      const result = await db.collection('schedules').updateOne(
         { year, month },
         { $set: scheduleData }
       );
+      console.log('Updated existing schedule:', result.modifiedCount, 'documents modified');
     } else {
-      await db.collection('schedules').insertOne({
+      const result = await db.collection('schedules').insertOne({
         ...scheduleData,
         createdAt: new Date(),
       });
+      console.log('Inserted new schedule with ID:', result.insertedId);
     }
 
-    return NextResponse.json({ message: 'Grafik został zapisany' });
+    console.log('Schedule successfully saved for', year, month);
+    return NextResponse.json({ message: 'Schedule has been saved' });
   } catch (error) {
     console.error('Save schedule error:', error);
-    return NextResponse.json({ error: 'Błąd serwera' }, { status: 500 });
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
