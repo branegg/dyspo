@@ -344,6 +344,10 @@ export default function AdminDashboard() {
               const isTuesday = dayOfWeek === 2;
               const assignment = selectedAssignments[day];
 
+              const tooltipText = availableCount > 0
+                ? `Dostępni pracownicy:\n${availableEmployees.map(emp => emp.user.name).join('\n')}`
+                : 'Brak dostępnych pracowników';
+
               return (
                 <div
                   key={day}
@@ -353,6 +357,7 @@ export default function AdminDashboard() {
                       : 'bg-gray-50 border-gray-200'
                   }`}
                   style={{ gridColumn: day === 1 ? adjustedDay + 1 : undefined }}
+                  title={tooltipText}
                 >
                   <div className="space-y-2">
                     <div className="font-semibold text-gray-700 text-center">{day}</div>
