@@ -17,7 +17,8 @@
       "Bash(curl -X POST https://dyspo-branegais-projects.vercel.app/api/auth/register )",
       "Bash(curl:*)",
       "Bash(npm run build:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm install)"
     ],
     "deny": [],
     "ask": []

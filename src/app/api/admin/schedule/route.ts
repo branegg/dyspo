@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { verifyToken } from '@/lib/auth';
 import { Schedule } from '@/types';
+import { ObjectId } from 'mongodb';
 
 export async function GET(request: NextRequest) {
   try {
@@ -145,7 +146,7 @@ export async function POST(request: NextRequest) {
       await db.collection('schedules').insertOne({
         ...scheduleData,
         createdAt: new Date(),
-      } as Schedule);
+      });
     }
 
     return NextResponse.json({ message: 'Grafik został zapisany' });

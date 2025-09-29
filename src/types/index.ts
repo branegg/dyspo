@@ -39,8 +39,13 @@ export interface DayAssignment {
   widok?: string;   // userId
 }
 
-export interface ScheduleWithUsers extends Schedule {
+export interface ScheduleWithUsers {
+  _id?: string;
+  year: number;
+  month: number;
   assignments: DayAssignmentWithUsers[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface DayAssignmentWithUsers {
