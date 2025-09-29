@@ -51,11 +51,13 @@ export interface ScheduleWithUsers {
 export interface DayAssignmentWithUsers {
   day: number;
   bagiety?: {
+    _id?: string;
     userId: string;
     name: string;
     email: string;
   };
   widok?: {
+    _id?: string;
     userId: string;
     name: string;
     email: string;
