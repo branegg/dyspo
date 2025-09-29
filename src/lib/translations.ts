@@ -88,6 +88,8 @@ export interface Translations {
   widok: string;
   noAssignment: string;
   day: string;
+  myAvailability: string;
+  workSchedule: string;
 
   // Modal
   close: string;
@@ -203,6 +205,8 @@ export const translations: Record<string, Translations> = {
     widok: 'Widok',
     noAssignment: 'Brak przydziału',
     day: 'Dzień',
+    myAvailability: 'Moja Dyspozycyjność',
+    workSchedule: 'Grafik Pracy',
 
     // Modal
     close: 'Zamknij',
@@ -317,6 +321,8 @@ export const translations: Record<string, Translations> = {
     widok: 'Widok',
     noAssignment: 'No assignment',
     day: 'Day',
+    myAvailability: 'My Availability',
+    workSchedule: 'Work Schedule',
 
     // Modal
     close: 'Close',

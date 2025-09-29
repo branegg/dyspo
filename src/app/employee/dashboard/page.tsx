@@ -7,6 +7,8 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Calendar from '@/components/Calendar';
 import ScheduleDisplay from '@/components/ScheduleDisplay';
 
+type TabType = 'availability' | 'schedule';
+
 export default function EmployeeDashboard() {
   const [user, setUser] = useState<any>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -14,6 +16,7 @@ export default function EmployeeDashboard() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [activeTab, setActiveTab] = useState<TabType>('availability');
   const router = useRouter();
   const { t } = useLanguage();
 
@@ -136,7 +139,7 @@ export default function EmployeeDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
@@ -155,60 +158,104 @@ export default function EmployeeDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex justify-between items-center mb-6">
+        {/* Tabs */}
+        <div className="bg-white rounded-t-lg shadow-lg">
+          <div className="flex border-b">
             <button
-              onClick={() => handleMonthChange('prev')}
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+              onClick={() => setActiveTab('availability')}
+              className={`flex-1 px-6 py-4 text-center font-semibold transition-colors ${
+                activeTab === 'availability'
+                  ? 'bg-blue-600 text-white border-b-2 border-blue-600'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
             >
-              {t.previousMonth}
+              {t.myAvailability}
             </button>
             <button
-              onClick={() => handleMonthChange('next')}
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+              onClick={() => setActiveTab('schedule')}
+              className={`flex-1 px-6 py-4 text-center font-semibold transition-colors ${
+                activeTab === 'schedule'
+                  ? 'bg-blue-600 text-white border-b-2 border-blue-600'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
             >
-              {t.nextMonth}
+              {t.workSchedule}
             </button>
           </div>
+        </div>
 
-          <Calendar
-            year={currentDate.getFullYear()}
-            month={currentDate.getMonth() + 1}
-            selectedDays={selectedDays}
-            onDayToggle={handleDayToggle}
-          />
+        {/* Tab Content */}
+        {activeTab === 'availability' ? (
+          <div className="bg-white rounded-b-lg shadow-lg p-6">
+            <div className="flex justify-between items-center mb-6">
+              <button
+                onClick={() => handleMonthChange('prev')}
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+              >
+                {t.previousMonth}
+              </button>
+              <button
+                onClick={() => handleMonthChange('next')}
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+              >
+                {t.nextMonth}
+              </button>
+            </div>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-600 mb-4">
-              {t.selectedDays}: {selectedDays.length > 0 ? selectedDays.join(', ') : t.noSelectedDays}
-            </p>
+            <Calendar
+              year={currentDate.getFullYear()}
+              month={currentDate.getMonth() + 1}
+              selectedDays={selectedDays}
+              onDayToggle={handleDayToggle}
+            />
 
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50"
-            >
-              {saving ? t.saving : t.saveAvailability}
-            </button>
+            <div className="mt-6 text-center">
+              <p className="text-gray-600 mb-4">
+                {t.selectedDays}: {selectedDays.length > 0 ? selectedDays.join(', ') : t.noSelectedDays}
+              </p>
 
-            {message && (
-              <div className={`mt-4 p-3 rounded ${
-                message.includes(t.availabilitySaved) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-              }`}>
-                {message}
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50"
+              >
+                {saving ? t.saving : t.saveAvailability}
+              </button>
+
+              {message && (
+                <div className={`mt-4 p-3 rounded ${
+                  message.includes(t.availabilitySaved) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                }`}>
+                  {message}
               </div>
             )}
           </div>
         </div>
+        ) : (
+          <div className="bg-white rounded-b-lg shadow-lg p-6">
+            <div className="flex justify-between items-center mb-6">
+              <button
+                onClick={() => handleMonthChange('prev')}
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+              >
+                {t.previousMonth}
+              </button>
+              <button
+                onClick={() => handleMonthChange('next')}
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+              >
+                {t.nextMonth}
+              </button>
+            </div>
 
-        <div className="mt-6">
-          <ScheduleDisplay
-            year={currentDate.getFullYear()}
-            month={currentDate.getMonth() + 1}
-            userRole="employee"
-            userId={user?._id}
-          />
-        </div>
+            <ScheduleDisplay
+              year={currentDate.getFullYear()}
+              month={currentDate.getMonth() + 1}
+              userRole="employee"
+              userId={user?._id}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
