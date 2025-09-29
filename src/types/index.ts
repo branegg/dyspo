@@ -23,3 +23,36 @@ export interface AvailabilityWithUser extends Availability {
     email: string;
   };
 }
+
+export interface Schedule {
+  _id?: string;
+  year: number;
+  month: number;
+  assignments: DayAssignment[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DayAssignment {
+  day: number;
+  bagiety?: string; // userId - null for Tuesdays
+  widok?: string;   // userId
+}
+
+export interface ScheduleWithUsers extends Schedule {
+  assignments: DayAssignmentWithUsers[];
+}
+
+export interface DayAssignmentWithUsers {
+  day: number;
+  bagiety?: {
+    userId: string;
+    name: string;
+    email: string;
+  };
+  widok?: {
+    userId: string;
+    name: string;
+    email: string;
+  };
+}

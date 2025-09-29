@@ -2,16 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AvailabilityWithUser, User } from '@/types';
+import { AvailabilityWithUser, User, DayAssignment, ScheduleWithUsers } from '@/types';
 import AddEmployeeModal from '@/components/AddEmployeeModal';
+import ScheduleBuilder from '@/components/ScheduleBuilder';
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<any>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [availability, setAvailability] = useState<AvailabilityWithUser[]>([]);
   const [employees, setEmployees] = useState<User[]>([]);
+  const [schedule, setSchedule] = useState<ScheduleWithUsers | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showScheduleBuilder, setShowScheduleBuilder] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -32,6 +35,7 @@ export default function AdminDashboard() {
     setUser(parsedUser);
     loadAvailability(token);
     loadEmployees(token);
+    loadSchedule(token);
   }, [currentDate]);
 
   const loadAvailability = async (token: string) => {
@@ -73,10 +77,55 @@ export default function AdminDashboard() {
     }
   };
 
+  const loadSchedule = async (token: string) => {
+    try {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+
+      const response = await fetch(`/api/admin/schedule?year=${year}&month=${month}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setSchedule(data.schedule);
+      }
+    } catch (error) {
+      console.error('Error loading schedule:', error);
+    }
+  };
+
   const handleAddEmployeeSuccess = () => {
     const token = localStorage.getItem('token');
     if (token) {
       loadEmployees(token);
+    }
+  };
+
+  const handleSaveSchedule = async (assignments: DayAssignment[]) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+
+      const response = await fetch('/api/admin/schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ year, month, assignments }),
+      });
+
+      if (response.ok) {
+        loadSchedule(token);
+      }
+    } catch (error) {
+      console.error('Error saving schedule:', error);
     }
   };
 
@@ -126,6 +175,13 @@ export default function AdminDashboard() {
             <p className="text-gray-600">Zarządzanie dyspozycyjnością pracowników</p>
           </div>
           <div className="flex gap-3">
+            <button
+              onClick={() => setShowScheduleBuilder(true)}
+              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+              disabled={availability.length === 0}
+            >
+              Buduj Grafik
+            </button>
             <button
               onClick={() => setShowAddModal(true)}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
@@ -302,11 +358,74 @@ export default function AdminDashboard() {
           )}
         </div>
 
+        {schedule && (
+          <div className="bg-white rounded-lg shadow-lg p-6 mt-6">
+            <h3 className="text-xl font-bold mb-4">Grafik Pracy - {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr>
+                    <th className="border p-3 bg-gray-50 text-center font-semibold">Dzień</th>
+                    <th className="border p-3 bg-gray-50 text-center font-semibold">🥖 Bagiety</th>
+                    <th className="border p-3 bg-gray-50 text-center font-semibold">🌅 Widok</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {schedule.assignments.map((assignment) => {
+                    const dayOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), assignment.day).getDay();
+                    const isTuesday = dayOfWeek === 2;
+                    const dayNames = ['Nie', 'Pon', 'Wto', 'Śro', 'Czw', 'Pią', 'Sob'];
+
+                    return (
+                      <tr key={assignment.day} className={`hover:bg-gray-50 ${isTuesday ? 'bg-blue-50' : ''}`}>
+                        <td className="border p-3 text-center font-medium">
+                          {assignment.day} ({dayNames[dayOfWeek]})
+                        </td>
+                        <td className="border p-3 text-center">
+                          {isTuesday ? (
+                            <span className="text-gray-500 italic">Dzień wolny</span>
+                          ) : assignment.bagiety ? (
+                            <div className="text-green-700 font-medium">
+                              {assignment.bagiety.name}
+                            </div>
+                          ) : (
+                            <span className="text-red-500">Nie przydzielono</span>
+                          )}
+                        </td>
+                        <td className="border p-3 text-center">
+                          {assignment.widok ? (
+                            <div className="text-blue-700 font-medium">
+                              {assignment.widok.name}
+                            </div>
+                          ) : (
+                            <span className="text-red-500">Nie przydzielono</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         <AddEmployeeModal
           isOpen={showAddModal}
           onClose={() => setShowAddModal(false)}
           onSuccess={handleAddEmployeeSuccess}
         />
+
+        {showScheduleBuilder && (
+          <ScheduleBuilder
+            year={currentDate.getFullYear()}
+            month={currentDate.getMonth() + 1}
+            availability={availability}
+            initialSchedule={schedule?.assignments || []}
+            onSave={handleSaveSchedule}
+            onClose={() => setShowScheduleBuilder(false)}
+          />
+        )}
       </div>
     </div>
   );
