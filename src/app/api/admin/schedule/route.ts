@@ -99,6 +99,7 @@ export async function POST(request: NextRequest) {
 
     const { year, month, assignments } = await request.json();
 
+    console.log('Received assignments:', JSON.stringify(assignments, null, 2));
 
     if (!year || !month || !Array.isArray(assignments)) {
       return NextResponse.json(
@@ -114,6 +115,8 @@ export async function POST(request: NextRequest) {
       assignment.day > 0 &&
       assignment.day <= 31
     );
+
+    console.log('Valid assignments to save:', JSON.stringify(validAssignments, null, 2));
 
 
     const db = await getDatabase();

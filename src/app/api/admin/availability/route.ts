@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
       },
       {
         $project: {
+          userId: 1,
           year: 1,
           month: 1,
           availableDays: 1,

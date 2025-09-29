@@ -90,6 +90,7 @@ export default function AdminDashboard() {
       const data = await response.json();
 
       if (response.ok && data.schedule) {
+        console.log('Loaded schedule from API:', data.schedule);
         setSchedule(data.schedule);
 
         // Convert to selectedAssignments format
@@ -97,6 +98,8 @@ export default function AdminDashboard() {
         data.schedule.assignments.forEach((assignment: DayAssignmentWithUsers) => {
           const bagietyId = assignment.bagiety?.userId;
           const widokId = assignment.widok?.userId;
+
+          console.log(`Day ${assignment.day}: bagiety=${bagietyId}, widok=${widokId}`);
 
           // Only add assignment if at least one location is assigned
           if (bagietyId || widokId) {
@@ -107,6 +110,7 @@ export default function AdminDashboard() {
             };
           }
         });
+        console.log('Converted assignments:', assignments);
         setSelectedAssignments(assignments);
       } else {
         setSchedule(null);
@@ -150,6 +154,8 @@ export default function AdminDashboard() {
     try {
       const token = localStorage.getItem('token');
       const assignmentsArray = Object.values(selectedAssignments);
+
+      console.log('Saving assignments:', assignmentsArray);
 
       const response = await fetch('/api/admin/schedule', {
         method: 'POST',
