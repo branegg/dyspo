@@ -121,6 +121,12 @@ export interface Translations {
   minimumPasswordError: string;
   namePlaceholderExample: string;
   repeatPassword: string;
+
+  // Edit employee
+  editEmployee: string;
+  newPassword: string;
+  leaveBlankToKeepPassword: string;
+  actions: string;
 }
 
 export const translations: Record<string, Translations> = {
@@ -249,7 +255,13 @@ export const translations: Record<string, Translations> = {
     minimumCharacters: 'Minimum 6 znaków',
     minimumPasswordError: 'Hasło musi mieć co najmniej 6 znaków',
     namePlaceholderExample: 'Jan Kowalski',
-    repeatPassword: 'Powtórz hasło'
+    repeatPassword: 'Powtórz hasło',
+
+    // Edit employee
+    editEmployee: 'Edytuj Pracownika',
+    newPassword: 'Nowe hasło',
+    leaveBlankToKeepPassword: 'Zostaw puste aby zachować obecne hasło',
+    actions: 'Akcje'
   },
 
   en: {
@@ -377,6 +389,12 @@ export const translations: Record<string, Translations> = {
     minimumCharacters: 'Minimum 6 characters',
     minimumPasswordError: 'Password must be at least 6 characters',
     namePlaceholderExample: 'John Smith',
-    repeatPassword: 'Repeat password'
+    repeatPassword: 'Repeat password',
+
+    // Edit employee
+    editEmployee: 'Edit Employee',
+    newPassword: 'New password',
+    leaveBlankToKeepPassword: 'Leave blank to keep current password',
+    actions: 'Actions'
   }
 };

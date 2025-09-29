@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AvailabilityWithUser, User, DayAssignment, ScheduleWithUsers, DayAssignmentWithUsers } from '@/types';
 import AddEmployeeModal from '@/components/AddEmployeeModal';
+import EditEmployeeModal from '@/components/EditEmployeeModal';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -15,6 +16,8 @@ export default function AdminDashboard() {
   const [schedule, setSchedule] = useState<ScheduleWithUsers | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<User | null>(null);
   const [selectedAssignments, setSelectedAssignments] = useState<{[key: number]: DayAssignment}>({});
   const router = useRouter();
   const { t } = useLanguage();
@@ -125,6 +128,18 @@ export default function AdminDashboard() {
   };
 
   const handleAddEmployeeSuccess = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      loadEmployees(token);
+    }
+  };
+
+  const handleEditEmployee = (employee: User) => {
+    setSelectedEmployee(employee);
+    setShowEditModal(true);
+  };
+
+  const handleEditEmployeeSuccess = () => {
     const token = localStorage.getItem('token');
     if (token) {
       loadEmployees(token);
@@ -441,13 +456,16 @@ export default function AdminDashboard() {
                 <thead>
                   <tr>
                     <th className="border p-3 bg-gray-50 text-left font-semibold">
-                      Imię i Nazwisko
+                      {t.name}
                     </th>
                     <th className="border p-3 bg-gray-50 text-left font-semibold">
-                      Email
+                      {t.email}
                     </th>
                     <th className="border p-3 bg-gray-50 text-center font-semibold">
-                      Data Rejestracji
+                      {t.registrationDate}
+                    </th>
+                    <th className="border p-3 bg-gray-50 text-center font-semibold">
+                      {t.actions}
                     </th>
                   </tr>
                 </thead>
@@ -463,6 +481,14 @@ export default function AdminDashboard() {
                       <td className="border p-3 text-center text-gray-600">
                         {new Date(employee.createdAt).toLocaleDateString('pl-PL')}
                       </td>
+                      <td className="border p-3 text-center">
+                        <button
+                          onClick={() => handleEditEmployee(employee)}
+                          className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
+                        >
+                          {t.edit}
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -475,6 +501,13 @@ export default function AdminDashboard() {
           isOpen={showAddModal}
           onClose={() => setShowAddModal(false)}
           onSuccess={handleAddEmployeeSuccess}
+        />
+
+        <EditEmployeeModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onSuccess={handleEditEmployeeSuccess}
+          employee={selectedEmployee}
         />
       </div>
     </div>
