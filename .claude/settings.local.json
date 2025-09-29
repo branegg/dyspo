@@ -10,7 +10,12 @@
       "Bash(git push:*)",
       "Bash(gh auth:*)",
       "Bash(git remote set-url:*)",
-      "Bash(gh repo view:*)"
+      "Bash(gh repo view:*)",
+      "Bash(npx vercel:*)",
+      "Bash(gh repo edit:*)",
+      "Bash(curl -X POST https://dyspo-go74k3y2f-branegais-projects.vercel.app/api/auth/register )",
+      "Bash(curl -X POST https://dyspo-branegais-projects.vercel.app/api/auth/register )",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

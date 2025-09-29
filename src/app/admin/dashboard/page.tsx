@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AvailabilityWithUser } from '@/types';
+import { AvailabilityWithUser, User } from '@/types';
+import AddEmployeeModal from '@/components/AddEmployeeModal';
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<any>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [availability, setAvailability] = useState<AvailabilityWithUser[]>([]);
+  const [employees, setEmployees] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -28,6 +31,7 @@ export default function AdminDashboard() {
 
     setUser(parsedUser);
     loadAvailability(token);
+    loadEmployees(token);
   }, [currentDate]);
 
   const loadAvailability = async (token: string) => {
@@ -49,6 +53,30 @@ export default function AdminDashboard() {
       console.error('Error loading availability:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadEmployees = async (token: string) => {
+    try {
+      const response = await fetch('/api/admin/employees', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setEmployees(data.employees || []);
+      }
+    } catch (error) {
+      console.error('Error loading employees:', error);
+    }
+  };
+
+  const handleAddEmployeeSuccess = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      loadEmployees(token);
     }
   };
 
@@ -97,12 +125,20 @@ export default function AdminDashboard() {
             </h1>
             <p className="text-gray-600">Zarządzanie dyspozycyjnością pracowników</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
-          >
-            Wyloguj się
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            >
+              Dodaj Pracownika
+            </button>
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+            >
+              Wyloguj się
+            </button>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
@@ -223,6 +259,54 @@ export default function AdminDashboard() {
             Liczby pokazują ile pracowników jest dostępnych w danym dniu
           </div>
         </div>
+
+        <div className="bg-white rounded-lg shadow-lg p-6 mt-6">
+          <h3 className="text-xl font-bold mb-4">Lista Pracowników ({employees.length})</h3>
+          {employees.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              Brak zarejestrowanych pracowników
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr>
+                    <th className="border p-3 bg-gray-50 text-left font-semibold">
+                      Imię i Nazwisko
+                    </th>
+                    <th className="border p-3 bg-gray-50 text-left font-semibold">
+                      Email
+                    </th>
+                    <th className="border p-3 bg-gray-50 text-center font-semibold">
+                      Data Rejestracji
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {employees.map((employee) => (
+                    <tr key={employee._id} className="hover:bg-gray-50">
+                      <td className="border p-3 font-medium">
+                        {employee.name}
+                      </td>
+                      <td className="border p-3 text-gray-600">
+                        {employee.email}
+                      </td>
+                      <td className="border p-3 text-center text-gray-600">
+                        {new Date(employee.createdAt).toLocaleDateString('pl-PL')}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <AddEmployeeModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          onSuccess={handleAddEmployeeSuccess}
+        />
       </div>
     </div>
   );
