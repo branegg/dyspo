@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { verifyToken } from '@/lib/auth';
-import { Schedule, ScheduleWithUsers } from '@/types';
-import { ObjectId } from 'mongodb';
+import { Schedule } from '@/types';
 
 export async function GET(request: NextRequest) {
   try {

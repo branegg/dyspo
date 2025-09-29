@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AvailabilityWithUser, DayAssignment, User } from '@/types';
+import { AvailabilityWithUser, DayAssignment } from '@/types';
 
 interface ScheduleBuilderProps {
   year: number;

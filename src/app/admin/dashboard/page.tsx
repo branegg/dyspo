@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AvailabilityWithUser, User, DayAssignment, ScheduleWithUsers } from '@/types';
+import { AvailabilityWithUser, User, DayAssignment, ScheduleWithUsers, DayAssignmentWithUsers } from '@/types';
 import AddEmployeeModal from '@/components/AddEmployeeModal';
 import ScheduleBuilder from '@/components/ScheduleBuilder';
 
@@ -371,7 +371,7 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {schedule.assignments.map((assignment) => {
+                  {schedule.assignments.map((assignment: DayAssignmentWithUsers) => {
                     const dayOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), assignment.day).getDay();
                     const isTuesday = dayOfWeek === 2;
                     const dayNames = ['Nie', 'Pon', 'Wto', 'Śro', 'Czw', 'Pią', 'Sob'];

@@ -15,7 +15,9 @@
       "Bash(gh repo edit:*)",
       "Bash(curl -X POST https://dyspo-go74k3y2f-branegais-projects.vercel.app/api/auth/register )",
       "Bash(curl -X POST https://dyspo-branegais-projects.vercel.app/api/auth/register )",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []
