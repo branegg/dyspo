@@ -32,9 +32,10 @@ interface ScheduleDisplayProps {
   month: number;
   userRole: 'admin' | 'employee';
   userId?: string;
+  myScheduleOnly?: boolean;
 }
 
-export default function ScheduleDisplay({ year, month, userRole, userId }: ScheduleDisplayProps) {
+export default function ScheduleDisplay({ year, month, userRole, userId, myScheduleOnly = false }: ScheduleDisplayProps) {
   const [schedule, setSchedule] = useState<ScheduleWithUsers | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -160,6 +161,64 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
     );
   }
 
+  // If myScheduleOnly, render as a list instead of calendar
+  if (myScheduleOnly && userRole === 'employee') {
+    const myDays = [];
+    const daysInMonth = getDaysInMonth(year, month);
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      if (isUserAssignedToDay(day)) {
+        const locations = getUserAssignmentForDay(day);
+        myDays.push({ day, locations });
+      }
+    }
+
+    if (myDays.length === 0) {
+      return (
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            {t.mySchedule} - {t.months[month - 1]} {year}
+          </h3>
+          <div className="text-center text-gray-500 py-8">
+            {t.noAssignmentsThisMonth}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-6">
+          {t.mySchedule} - {t.months[month - 1]} {year}
+        </h3>
+        <div className="space-y-3">
+          {myDays.map(({ day, locations }) => {
+            const date = new Date(year, month - 1, day);
+            const dayName = t.dayNames[date.getDay() === 0 ? 6 : date.getDay() - 1];
+
+            return (
+              <div key={day} className="flex items-center gap-4 p-4 bg-green-50 border-2 border-green-300 rounded-lg">
+                <div className="font-bold text-2xl text-gray-700 w-16 text-center">
+                  {day}
+                </div>
+                <div className="flex-1">
+                  <div className="font-semibold text-gray-800">{dayName}</div>
+                  <div className="flex gap-2 mt-2">
+                    {locations && locations.map((loc, idx) => (
+                      <div key={idx} className="bg-green-500 text-white px-3 py-1 rounded font-medium text-sm">
+                        {loc}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfMonth(year, month);
 
@@ -203,26 +262,34 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
       );
       dayClassName = assignment ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200';
     } else {
-      // Employee view
+      // Employee view with location boxes
       content = (
-        <div className="space-y-1 w-full text-left">
+        <div className="space-y-1.5 w-full">
           {!isTuesday && (
-            <div className={isUserAssigned && assignment?.bagiety?._id === userId ? 'text-green-600 font-bold' : 'text-blue-600'}>
-              <div className="font-medium text-xs">🥖</div>
-              <div className="truncate text-xs" title={assignment?.bagiety?.name}>
+            <div className={`rounded px-1.5 py-1 text-center ${
+              isUserAssigned && assignment?.bagiety?._id === userId
+                ? 'bg-green-500 text-white font-semibold'
+                : 'bg-blue-100 border border-blue-300'
+            }`}>
+              <div className="text-[10px] font-bold mb-0.5">{t.bagiety}</div>
+              <div className="text-xs truncate" title={assignment?.bagiety?.name}>
                 {assignment?.bagiety?.name || '-'}
               </div>
             </div>
           )}
-          <div className={isUserAssigned && assignment?.widok?._id === userId ? 'text-green-600 font-bold' : 'text-purple-600'}>
-            <div className="font-medium text-xs">🌅</div>
-            <div className="truncate text-xs" title={assignment?.widok?.name}>
+          <div className={`rounded px-1.5 py-1 text-center ${
+            isUserAssigned && assignment?.widok?._id === userId
+              ? 'bg-green-500 text-white font-semibold'
+              : 'bg-purple-100 border border-purple-300'
+          }`}>
+            <div className="text-[10px] font-bold mb-0.5">{t.widok}</div>
+            <div className="text-xs truncate" title={assignment?.widok?.name}>
               {assignment?.widok?.name || '-'}
             </div>
           </div>
         </div>
       );
-      dayClassName = isUserAssigned ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-200';
+      dayClassName = 'bg-gray-50 border-gray-200';
     }
 
     calendarDays.push({
@@ -258,11 +325,23 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
       )}
 
       {userRole === 'employee' && (
-        <div className="mt-4 text-xs text-gray-600">
-          <div className="flex flex-wrap gap-4">
-            <span className="text-green-600 font-bold">■ {t.yourShifts}</span>
-            <span><strong>🥖</strong> {t.bagiety}</span>
-            <span><strong>🌅</strong> {t.widok}</span>
+        <div className="mt-4 text-xs">
+          <div className="flex flex-wrap gap-3 items-center">
+            <div className="flex items-center gap-2">
+              <div className="bg-green-500 text-white px-2 py-1 rounded font-semibold">
+                {t.yourShifts}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="bg-blue-100 border border-blue-300 px-2 py-1 rounded">
+                {t.bagiety}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="bg-purple-100 border border-purple-300 px-2 py-1 rounded">
+                {t.widok}
+              </div>
+            </div>
           </div>
         </div>
       )}

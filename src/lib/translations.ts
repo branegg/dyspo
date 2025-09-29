@@ -132,6 +132,10 @@ export interface Translations {
   confirmDelete: string;
   employeeDeleted: string;
   deleteError: string;
+
+  // My Schedule
+  mySchedule: string;
+  noAssignmentsThisMonth: string;
 }
 
 export const translations: Record<string, Translations> = {
@@ -271,7 +275,11 @@ export const translations: Record<string, Translations> = {
     // Delete employee
     confirmDelete: 'Czy na pewno chcesz usunąć pracownika',
     employeeDeleted: 'Pracownik został usunięty',
-    deleteError: 'Błąd podczas usuwania pracownika'
+    deleteError: 'Błąd podczas usuwania pracownika',
+
+    // My Schedule
+    mySchedule: 'Mój Grafik',
+    noAssignmentsThisMonth: 'Brak przydziałów w tym miesiącu'
   },
 
   en: {
@@ -410,6 +418,10 @@ export const translations: Record<string, Translations> = {
     // Delete employee
     confirmDelete: 'Are you sure you want to delete employee',
     employeeDeleted: 'Employee has been deleted',
-    deleteError: 'Error deleting employee'
+    deleteError: 'Error deleting employee',
+
+    // My Schedule
+    mySchedule: 'My Schedule',
+    noAssignmentsThisMonth: 'No assignments this month'
   }
 };

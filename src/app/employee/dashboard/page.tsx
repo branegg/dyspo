@@ -7,7 +7,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Calendar from '@/components/Calendar';
 import ScheduleDisplay from '@/components/ScheduleDisplay';
 
-type TabType = 'availability' | 'schedule';
+type TabType = 'availability' | 'schedule' | 'mySchedule';
 
 export default function EmployeeDashboard() {
   const [user, setUser] = useState<any>(null);
@@ -172,6 +172,16 @@ export default function EmployeeDashboard() {
               {t.myAvailability}
             </button>
             <button
+              onClick={() => setActiveTab('mySchedule')}
+              className={`flex-1 px-6 py-4 text-center font-semibold transition-colors ${
+                activeTab === 'mySchedule'
+                  ? 'bg-blue-600 text-white border-b-2 border-blue-600'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {t.mySchedule}
+            </button>
+            <button
               onClick={() => setActiveTab('schedule')}
               className={`flex-1 px-6 py-4 text-center font-semibold transition-colors ${
                 activeTab === 'schedule'
@@ -231,6 +241,31 @@ export default function EmployeeDashboard() {
             )}
           </div>
         </div>
+        ) : activeTab === 'mySchedule' ? (
+          <div className="bg-white rounded-b-lg shadow-lg p-6">
+            <div className="flex justify-between items-center mb-6">
+              <button
+                onClick={() => handleMonthChange('prev')}
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+              >
+                {t.previousMonth}
+              </button>
+              <button
+                onClick={() => handleMonthChange('next')}
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+              >
+                {t.nextMonth}
+              </button>
+            </div>
+
+            <ScheduleDisplay
+              year={currentDate.getFullYear()}
+              month={currentDate.getMonth() + 1}
+              userRole="employee"
+              userId={user?._id}
+              myScheduleOnly={true}
+            />
+          </div>
         ) : (
           <div className="bg-white rounded-b-lg shadow-lg p-6">
             <div className="flex justify-between items-center mb-6">
@@ -253,6 +288,7 @@ export default function EmployeeDashboard() {
               month={currentDate.getMonth() + 1}
               userRole="employee"
               userId={user?._id}
+              myScheduleOnly={false}
             />
           </div>
         )}
