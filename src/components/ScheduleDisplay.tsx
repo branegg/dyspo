@@ -228,20 +228,20 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
                 </div>
               ) : (
                 <div className="space-y-1">
-                  {isUserAssigned && userLocations && (
-                    <div className="text-green-600 font-medium">
-                      {userLocations.map(location => (
-                        <div key={location} className="text-xs">
-                          {location === t.bagiety ? 'B' : 'W'}
-                        </div>
-                      ))}
+                  {!isTuesday && (
+                    <div className={isUserAssigned && assignment?.bagiety?._id === userId ? 'text-green-600 font-bold' : 'text-blue-600'}>
+                      <div className="font-medium text-xs">🥖</div>
+                      <div className="truncate text-xs" title={assignment?.bagiety?.name}>
+                        {assignment?.bagiety?.name || '-'}
+                      </div>
                     </div>
                   )}
-                  {!isUserAssigned && assignment && (
-                    <div className="text-gray-400 text-xs">
-                      {t.othersWorking}
+                  <div className={isUserAssigned && assignment?.widok?._id === userId ? 'text-green-600 font-bold' : 'text-purple-600'}>
+                    <div className="font-medium text-xs">🌅</div>
+                    <div className="truncate text-xs" title={assignment?.widok?.name}>
+                      {assignment?.widok?.name || '-'}
                     </div>
-                  )}
+                  </div>
                 </div>
               )}
             </div>
@@ -261,9 +261,10 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
 
       {userRole === 'employee' && (
         <div className="mt-4 text-xs text-gray-600">
-          <div className="flex space-x-4">
-            <span className="text-green-600">■ {t.yourShifts}</span>
-            <span className="text-gray-400">■ {t.othersShifts}</span>
+          <div className="flex flex-wrap gap-4">
+            <span className="text-green-600 font-bold">■ {t.yourShifts}</span>
+            <span><strong>🥖</strong> {t.bagiety}</span>
+            <span><strong>🌅</strong> {t.widok}</span>
           </div>
         </div>
       )}
