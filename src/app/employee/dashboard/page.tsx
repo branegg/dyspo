@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Calendar from '@/components/Calendar';
+import ScheduleDisplay from '@/components/ScheduleDisplay';
 
 export default function EmployeeDashboard() {
   const [user, setUser] = useState<any>(null);
@@ -192,6 +193,15 @@ export default function EmployeeDashboard() {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="mt-6">
+          <ScheduleDisplay
+            year={currentDate.getFullYear()}
+            month={currentDate.getMonth() + 1}
+            userRole="employee"
+            userId={user?._id}
+          />
         </div>
       </div>
     </div>

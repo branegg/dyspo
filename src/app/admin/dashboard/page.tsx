@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { AvailabilityWithUser, User, DayAssignment, ScheduleWithUsers, DayAssignmentWithUsers } from '@/types';
 import AddEmployeeModal from '@/components/AddEmployeeModal';
 import ScheduleBuilder from '@/components/ScheduleBuilder';
+import ScheduleDisplay from '@/components/ScheduleDisplay';
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<any>(null);
@@ -358,57 +359,13 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        {schedule && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mt-6">
-            <h3 className="text-xl font-bold mb-4">Grafik Pracy - {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr>
-                    <th className="border p-3 bg-gray-50 text-center font-semibold">Dzień</th>
-                    <th className="border p-3 bg-gray-50 text-center font-semibold">🥖 Bagiety</th>
-                    <th className="border p-3 bg-gray-50 text-center font-semibold">🌅 Widok</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {schedule.assignments.map((assignment: DayAssignmentWithUsers) => {
-                    const dayOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), assignment.day).getDay();
-                    const isTuesday = dayOfWeek === 2;
-                    const dayNames = ['Nie', 'Pon', 'Wto', 'Śro', 'Czw', 'Pią', 'Sob'];
-
-                    return (
-                      <tr key={assignment.day} className={`hover:bg-gray-50 ${isTuesday ? 'bg-blue-50' : ''}`}>
-                        <td className="border p-3 text-center font-medium">
-                          {assignment.day} ({dayNames[dayOfWeek]})
-                        </td>
-                        <td className="border p-3 text-center">
-                          {isTuesday ? (
-                            <span className="text-gray-500 italic">Dzień wolny</span>
-                          ) : assignment.bagiety ? (
-                            <div className="text-green-700 font-medium">
-                              {assignment.bagiety.name}
-                            </div>
-                          ) : (
-                            <span className="text-red-500">Nie przydzielono</span>
-                          )}
-                        </td>
-                        <td className="border p-3 text-center">
-                          {assignment.widok ? (
-                            <div className="text-blue-700 font-medium">
-                              {assignment.widok.name}
-                            </div>
-                          ) : (
-                            <span className="text-red-500">Nie przydzielono</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+        <div className="mt-6">
+          <ScheduleDisplay
+            year={currentDate.getFullYear()}
+            month={currentDate.getMonth() + 1}
+            userRole="admin"
+          />
+        </div>
 
         <AddEmployeeModal
           isOpen={showAddModal}
