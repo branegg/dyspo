@@ -96,11 +96,17 @@ export default function AdminDashboard() {
         // Convert to selectedAssignments format
         const assignments: {[key: number]: DayAssignment} = {};
         data.schedule.assignments.forEach((assignment: DayAssignmentWithUsers) => {
-          assignments[assignment.day] = {
-            day: assignment.day,
-            bagiety: assignment.bagiety?.userId || undefined,
-            widok: assignment.widok?.userId || undefined
-          };
+          const bagietyId = assignment.bagiety?.userId;
+          const widokId = assignment.widok?.userId;
+
+          // Only add assignment if at least one location is assigned
+          if (bagietyId || widokId) {
+            assignments[assignment.day] = {
+              day: assignment.day,
+              bagiety: bagietyId || undefined,
+              widok: widokId || undefined
+            };
+          }
         });
         setSelectedAssignments(assignments);
       } else {
@@ -182,7 +188,7 @@ export default function AdminDashboard() {
       if (response.ok) {
         const token = localStorage.getItem('token');
         if (token) {
-          loadSchedule(token); // Reload to get updated data
+          await loadSchedule(token); // Reload to get updated data
         }
         alert('Grafik został zapisany!');
       } else {
