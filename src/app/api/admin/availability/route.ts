@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { verifyToken } from '@/lib/auth';
 import { AvailabilityWithUser } from '@/types';
+import { ObjectId } from 'mongodb';
 
 export async function GET(request: NextRequest) {
   try {
@@ -28,9 +29,14 @@ export async function GET(request: NextRequest) {
         $match: { year, month }
       },
       {
+        $addFields: {
+          userObjectId: { $toObjectId: "$userId" }
+        }
+      },
+      {
         $lookup: {
           from: 'users',
-          localField: 'userId',
+          localField: 'userObjectId',
           foreignField: '_id',
           as: 'user'
         }
