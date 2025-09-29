@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AvailabilityWithUser, User, DayAssignment, ScheduleWithUsers, DayAssignmentWithUsers } from '@/types';
 import AddEmployeeModal from '@/components/AddEmployeeModal';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<any>(null);
@@ -15,6 +17,7 @@ export default function AdminDashboard() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedAssignments, setSelectedAssignments] = useState<{[key: number]: DayAssignment}>({});
   const router = useRouter();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -225,22 +228,23 @@ export default function AdminDashboard() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Panel Administratora
+              {t.adminDashboard}
             </h1>
-            <p className="text-gray-600">Zarządzanie dyspozycyjnością pracowników</p>
+            <p className="text-gray-600">{t.employeeAvailability}</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <button
               onClick={() => setShowAddModal(true)}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
             >
-              Dodaj Pracownika
+              {t.addEmployee}
             </button>
             <button
               onClick={handleLogout}
               className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
             >
-              Wyloguj się
+              {t.logout}
             </button>
           </div>
         </div>
@@ -251,16 +255,16 @@ export default function AdminDashboard() {
               onClick={() => handleMonthChange('prev')}
               className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
             >
-              ← Poprzedni miesiąc
+              {t.previousMonth}
             </button>
             <h2 className="text-2xl font-bold">
-              {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+              {t.months[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
             <button
               onClick={() => handleMonthChange('next')}
               className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
             >
-              Następny miesiąc →
+              {t.nextMonth}
             </button>
           </div>
 

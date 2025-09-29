@@ -79,6 +79,14 @@ export interface Translations {
   scheduleBuilder: string;
   availability: string;
   schedule: string;
+  noAvailabilityData: string;
+  employee: string;
+  availableDays: string;
+  numberOfDays: string;
+  saveSchedule: string;
+  noAvailableEmployees: string;
+  registrationDate: string;
+  noRegisteredEmployees: string;
 
   // Schedule
   scheduleForMonth: string;
@@ -200,6 +208,14 @@ export const translations: Record<string, Translations> = {
     scheduleBuilder: 'Konstruktor Grafiku',
     availability: 'Dyspozycyjność',
     schedule: 'Grafik',
+    noAvailabilityData: 'Brak danych o dyspozycyjności w tym miesiącu',
+    employee: 'Pracownik',
+    availableDays: 'Dostępne dni',
+    numberOfDays: 'Liczba dni',
+    saveSchedule: 'Zapisz Grafik',
+    noAvailableEmployees: 'Brak dostępnych pracowników',
+    registrationDate: 'Data Rejestracji',
+    noRegisteredEmployees: 'Brak zarejestrowanych pracowników',
 
     // Schedule
     scheduleForMonth: 'Grafik na',
@@ -320,6 +336,14 @@ export const translations: Record<string, Translations> = {
     scheduleBuilder: 'Schedule Builder',
     availability: 'Availability',
     schedule: 'Schedule',
+    noAvailabilityData: 'No availability data for this month',
+    employee: 'Employee',
+    availableDays: 'Available days',
+    numberOfDays: 'Number of days',
+    saveSchedule: 'Save Schedule',
+    noAvailableEmployees: 'No available employees',
+    registrationDate: 'Registration Date',
+    noRegisteredEmployees: 'No registered employees',
 
     // Schedule
     scheduleForMonth: 'Schedule for',
