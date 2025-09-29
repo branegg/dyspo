@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface DayAssignmentWithUsers {
   day: number;
@@ -36,13 +37,7 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
   const [schedule, setSchedule] = useState<ScheduleWithUsers | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  const monthNames = [
-    'Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
-    'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'
-  ];
-
-  const dayNames = ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Nie'];
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchSchedule();
@@ -78,11 +73,11 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
       } else if (response.status === 404) {
         setSchedule(null);
       } else {
-        const errorData = await response.json().catch(() => ({ error: 'Nieznany błąd' }));
-        setError(`Błąd podczas pobierania grafiku: ${errorData.error || 'Status ' + response.status}`);
+        const errorData = await response.json().catch(() => ({ error: t.connectionError }));
+        setError(`${t.saveError}: ${errorData.error || 'Status ' + response.status}`);
       }
     } catch (error) {
-      setError('Błąd połączenia z serwerem');
+      setError(t.connectionError);
     } finally {
       setLoading(false);
     }
@@ -122,8 +117,8 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
     if (!assignment) return null;
 
     const locations = [];
-    if (assignment.bagiety?._id === userId) locations.push('Bagiety');
-    if (assignment.widok?._id === userId) locations.push('Widok');
+    if (assignment.bagiety?._id === userId) locations.push(t.bagiety);
+    if (assignment.widok?._id === userId) locations.push(t.widok);
 
     return locations;
   };
@@ -155,10 +150,10 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
     return (
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          Grafik - {monthNames[month - 1]} {year}
+          {t.schedule} - {t.months[month - 1]} {year}
         </h3>
         <div className="text-center text-gray-500 py-8">
-          Brak grafiku na ten miesiąc
+          {t.noScheduleYet}
         </div>
       </div>
     );
@@ -181,11 +176,11 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h3 className="text-lg font-semibold text-gray-800 mb-4">
-        Grafik - {monthNames[month - 1]} {year}
+        {t.schedule} - {t.months[month - 1]} {year}
       </h3>
 
       <div className="grid grid-cols-7 gap-1 mb-2">
-        {dayNames.map(day => (
+        {t.dayNames.map(day => (
           <div key={day} className="p-2 text-center text-sm font-medium text-gray-600 bg-gray-50">
             {day}
           </div>
@@ -237,14 +232,14 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
                     <div className="text-green-600 font-medium">
                       {userLocations.map(location => (
                         <div key={location} className="text-xs">
-                          {location === 'Bagiety' ? 'B' : 'W'}
+                          {location === t.bagiety ? 'B' : 'W'}
                         </div>
                       ))}
                     </div>
                   )}
                   {!isUserAssigned && assignment && (
                     <div className="text-gray-400 text-xs">
-                      Pracują inni
+                      {t.othersWorking}
                     </div>
                   )}
                 </div>
@@ -257,9 +252,9 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
       {userRole === 'admin' && (
         <div className="mt-4 text-xs text-gray-600">
           <div className="flex space-x-4">
-            <span><strong>B:</strong> Bagiety</span>
-            <span><strong>W:</strong> Widok</span>
-            <span className="text-orange-600">Wtorki: tylko Widok</span>
+            <span><strong>B:</strong> {t.bagiety}</span>
+            <span><strong>W:</strong> {t.widok}</span>
+            <span className="text-orange-600">{t.tuesdaysOnlyWidok}</span>
           </div>
         </div>
       )}
@@ -267,8 +262,8 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
       {userRole === 'employee' && (
         <div className="mt-4 text-xs text-gray-600">
           <div className="flex space-x-4">
-            <span className="text-green-600">■ Twoje dyżury</span>
-            <span className="text-gray-400">■ Dyżury innych</span>
+            <span className="text-green-600">■ {t.yourShifts}</span>
+            <span className="text-gray-400">■ {t.othersShifts}</span>
           </div>
         </div>
       )}

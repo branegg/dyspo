@@ -90,6 +90,10 @@ export interface Translations {
   day: string;
   myAvailability: string;
   workSchedule: string;
+  othersWorking: string;
+  yourShifts: string;
+  othersShifts: string;
+  tuesdaysOnlyWidok: string;
 
   // Modal
   close: string;
@@ -207,6 +211,10 @@ export const translations: Record<string, Translations> = {
     day: 'Dzień',
     myAvailability: 'Moja Dyspozycyjność',
     workSchedule: 'Grafik Pracy',
+    othersWorking: 'Pracują inni',
+    yourShifts: 'Twoje dyżury',
+    othersShifts: 'Dyżury innych',
+    tuesdaysOnlyWidok: 'Wtorki: tylko Widok',
 
     // Modal
     close: 'Zamknij',
@@ -323,6 +331,10 @@ export const translations: Record<string, Translations> = {
     day: 'Day',
     myAvailability: 'My Availability',
     workSchedule: 'Work Schedule',
+    othersWorking: 'Others working',
+    yourShifts: 'Your shifts',
+    othersShifts: 'Others\' shifts',
+    tuesdaysOnlyWidok: 'Tuesdays: Widok only',
 
     // Modal
     close: 'Close',
