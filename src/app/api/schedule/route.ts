@@ -61,8 +61,17 @@ export async function GET(request: NextRequest) {
       if (assignment.widok) userIds.push(assignment.widok);
     });
 
+    // Filter valid ObjectIds only
+    const validUserIds = userIds.filter(id => {
+      try {
+        return ObjectId.isValid(id);
+      } catch {
+        return false;
+      }
+    });
+
     const users = await db.collection('users').find({
-      _id: { $in: userIds.map((id: string) => new ObjectId(id)) }
+      _id: { $in: validUserIds.map((id: string) => new ObjectId(id)) }
     }).toArray();
 
     // Create user lookup map
