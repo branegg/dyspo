@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import UnifiedCalendar from './UnifiedCalendar';
 
 interface DayAssignmentWithUsers {
   day: number;
@@ -161,16 +162,75 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
 
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfMonth(year, month);
+
+  // Build calendar days data
   const calendarDays = [];
 
   // Empty cells for days before month starts
   for (let i = 0; i < firstDay; i++) {
-    calendarDays.push(null);
+    calendarDays.push({ day: null });
   }
 
   // Days of the month
   for (let day = 1; day <= daysInMonth; day++) {
-    calendarDays.push(day);
+    const assignment = getAssignmentForDay(day);
+    const dayOfWeek = getDayOfWeek(year, month, day);
+    const isTuesday = dayOfWeek === 1;
+    const isUserAssigned = isUserAssignedToDay(day);
+
+    let content;
+    let dayClassName = 'border rounded';
+
+    if (userRole === 'admin') {
+      // Admin view
+      content = (
+        <div className="space-y-1 w-full text-left">
+          {!isTuesday && (
+            <div className="text-blue-600">
+              <div className="font-medium">B:</div>
+              <div className="truncate text-xs" title={assignment?.bagiety?.name}>
+                {assignment?.bagiety?.name || '-'}
+              </div>
+            </div>
+          )}
+          <div className="text-green-600">
+            <div className="font-medium">W:</div>
+            <div className="truncate text-xs" title={assignment?.widok?.name}>
+              {assignment?.widok?.name || '-'}
+            </div>
+          </div>
+        </div>
+      );
+      dayClassName = assignment ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200';
+    } else {
+      // Employee view
+      content = (
+        <div className="space-y-1 w-full text-left">
+          {!isTuesday && (
+            <div className={isUserAssigned && assignment?.bagiety?._id === userId ? 'text-green-600 font-bold' : 'text-blue-600'}>
+              <div className="font-medium text-xs">🥖</div>
+              <div className="truncate text-xs" title={assignment?.bagiety?.name}>
+                {assignment?.bagiety?.name || '-'}
+              </div>
+            </div>
+          )}
+          <div className={isUserAssigned && assignment?.widok?._id === userId ? 'text-green-600 font-bold' : 'text-purple-600'}>
+            <div className="font-medium text-xs">🌅</div>
+            <div className="truncate text-xs" title={assignment?.widok?.name}>
+              {assignment?.widok?.name || '-'}
+            </div>
+          </div>
+        </div>
+      );
+      dayClassName = isUserAssigned ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-200';
+    }
+
+    calendarDays.push({
+      day,
+      content,
+      className: dayClassName,
+      onClick: () => {}
+    });
   }
 
   return (
@@ -179,75 +239,13 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
         {t.schedule} - {t.months[month - 1]} {year}
       </h3>
 
-      <div className="grid grid-cols-7 gap-1 mb-2">
-        {t.dayNames.map(day => (
-          <div key={day} className="p-2 text-center text-sm font-medium text-gray-600 bg-gray-50">
-            {day}
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-7 gap-1">
-        {calendarDays.map((day, index) => {
-          if (!day) {
-            return <div key={index} className="h-20"></div>;
-          }
-
-          const assignment = getAssignmentForDay(day);
-          const dayOfWeek = getDayOfWeek(year, month, day);
-          const isTuesday = dayOfWeek === 1;
-          const isUserAssigned = isUserAssignedToDay(day);
-          const userLocations = getUserAssignmentForDay(day);
-
-          return (
-            <div
-              key={day}
-              className={`
-                border rounded p-1 h-20 text-xs
-                ${isUserAssigned ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-200'}
-              `}
-            >
-              <div className="font-medium text-gray-700 mb-1">{day}</div>
-
-              {userRole === 'admin' ? (
-                <div className="space-y-1">
-                  {!isTuesday && (
-                    <div className="text-blue-600">
-                      <div className="font-medium">B:</div>
-                      <div className="truncate" title={assignment?.bagiety?.name}>
-                        {assignment?.bagiety?.name || '-'}
-                      </div>
-                    </div>
-                  )}
-                  <div className="text-green-600">
-                    <div className="font-medium">W:</div>
-                    <div className="truncate" title={assignment?.widok?.name}>
-                      {assignment?.widok?.name || '-'}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  {!isTuesday && (
-                    <div className={isUserAssigned && assignment?.bagiety?._id === userId ? 'text-green-600 font-bold' : 'text-blue-600'}>
-                      <div className="font-medium text-xs">🥖</div>
-                      <div className="truncate text-xs" title={assignment?.bagiety?.name}>
-                        {assignment?.bagiety?.name || '-'}
-                      </div>
-                    </div>
-                  )}
-                  <div className={isUserAssigned && assignment?.widok?._id === userId ? 'text-green-600 font-bold' : 'text-purple-600'}>
-                    <div className="font-medium text-xs">🌅</div>
-                    <div className="truncate text-xs" title={assignment?.widok?.name}>
-                      {assignment?.widok?.name || '-'}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      <UnifiedCalendar
+        year={year}
+        month={month}
+        days={calendarDays}
+        showDayNames={true}
+        showMonthTitle={false}
+      />
 
       {userRole === 'admin' && (
         <div className="mt-4 text-xs text-gray-600">
