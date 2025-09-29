@@ -77,7 +77,8 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
       } else if (response.status === 404) {
         setSchedule(null);
       } else {
-        setError('Błąd podczas pobierania grafiku');
+        const errorData = await response.json().catch(() => ({ error: 'Nieznany błąd' }));
+        setError(`Błąd podczas pobierania grafiku: ${errorData.error || 'Status ' + response.status}`);
       }
     } catch (error) {
       setError('Błąd połączenia z serwerem');

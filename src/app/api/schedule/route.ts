@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
-import jwt from 'jsonwebtoken';
+import { verifyToken } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
 
 export async function GET(request: NextRequest) {
@@ -25,7 +25,14 @@ export async function GET(request: NextRequest) {
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const decoded = verifyToken(token) as any;
+
+    if (!decoded) {
+      return NextResponse.json(
+        { error: 'Nieprawidłowy token' },
+        { status: 401 }
+      );
+    }
 
     if (decoded.role !== 'employee') {
       return NextResponse.json(
