@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AvailabilityWithUser, User, DayAssignment, ScheduleWithUsers, DayAssignmentWithUsers } from '@/types';
 import AddEmployeeModal from '@/components/AddEmployeeModal';
-import ScheduleBuilder from '@/components/ScheduleBuilder';
-import ScheduleDisplay from '@/components/ScheduleDisplay';
+import InteractiveScheduleCalendar from '@/components/InteractiveScheduleCalendar';
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<any>(null);
@@ -15,7 +14,6 @@ export default function AdminDashboard() {
   const [schedule, setSchedule] = useState<ScheduleWithUsers | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showScheduleBuilder, setShowScheduleBuilder] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -36,7 +34,6 @@ export default function AdminDashboard() {
     setUser(parsedUser);
     loadAvailability(token);
     loadEmployees(token);
-    loadSchedule(token);
   }, [currentDate]);
 
   const loadAvailability = async (token: string) => {
@@ -78,25 +75,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const loadSchedule = async (token: string) => {
-    try {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1;
-
-      const response = await fetch(`/api/admin/schedule?year=${year}&month=${month}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setSchedule(data.schedule);
-      }
-    } catch (error) {
-      console.error('Error loading schedule:', error);
-    }
-  };
 
   const handleAddEmployeeSuccess = () => {
     const token = localStorage.getItem('token');
@@ -105,29 +83,8 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleSaveSchedule = async (assignments: DayAssignment[]) => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    try {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1;
-
-      const response = await fetch('/api/admin/schedule', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ year, month, assignments }),
-      });
-
-      if (response.ok) {
-        loadSchedule(token);
-      }
-    } catch (error) {
-      console.error('Error saving schedule:', error);
-    }
+  const handleScheduleUpdate = async (assignments: DayAssignment[]) => {
+    // This will be handled by the InteractiveScheduleCalendar component
   };
 
   const handleMonthChange = (direction: 'prev' | 'next') => {
@@ -176,13 +133,6 @@ export default function AdminDashboard() {
             <p className="text-gray-600">Zarządzanie dyspozycyjnością pracowników</p>
           </div>
           <div className="flex gap-3">
-            <button
-              onClick={() => setShowScheduleBuilder(true)}
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
-              disabled={availability.length === 0}
-            >
-              Buduj Grafik
-            </button>
             <button
               onClick={() => setShowAddModal(true)}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
@@ -360,10 +310,11 @@ export default function AdminDashboard() {
         </div>
 
         <div className="mt-6">
-          <ScheduleDisplay
+          <InteractiveScheduleCalendar
             year={currentDate.getFullYear()}
             month={currentDate.getMonth() + 1}
-            userRole="admin"
+            availability={availability}
+            onScheduleUpdate={handleScheduleUpdate}
           />
         </div>
 
@@ -372,21 +323,6 @@ export default function AdminDashboard() {
           onClose={() => setShowAddModal(false)}
           onSuccess={handleAddEmployeeSuccess}
         />
-
-        {showScheduleBuilder && (
-          <ScheduleBuilder
-            year={currentDate.getFullYear()}
-            month={currentDate.getMonth() + 1}
-            availability={availability}
-            initialSchedule={schedule?.assignments.map(assignment => ({
-              day: assignment.day,
-              bagiety: assignment.bagiety?.userId,
-              widok: assignment.widok?.userId
-            })) || []}
-            onSave={handleSaveSchedule}
-            onClose={() => setShowScheduleBuilder(false)}
-          />
-        )}
       </div>
     </div>
   );
