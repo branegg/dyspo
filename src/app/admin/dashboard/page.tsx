@@ -14,7 +14,6 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedAssignments, setSelectedAssignments] = useState<{[key: number]: DayAssignment}>({});
-  const [modal, setModal] = useState<{day: number; isOpen: boolean}>({ day: 0, isOpen: false });
   const router = useRouter();
 
   useEffect(() => {
@@ -127,26 +126,6 @@ export default function AdminDashboard() {
 
   const getAvailableEmployeesForDay = (day: number) => {
     return availability.filter(item => item.availableDays.includes(day));
-  };
-
-  const getUserName = (userId: string | undefined) => {
-    if (!userId) return null;
-    const employee = employees.find(emp => emp._id === userId);
-    return employee?.name || null;
-  };
-
-  const openDayModal = (day: number) => {
-    const availableCount = availability.reduce((count, item) => {
-      return count + (item.availableDays.includes(day) ? 1 : 0);
-    }, 0);
-
-    if (availableCount > 0) {
-      setModal({ day, isOpen: true });
-    }
-  };
-
-  const closeDayModal = () => {
-    setModal({ day: 0, isOpen: false });
   };
 
   const updateDayAssignment = (day: number, bagiety: string | null, widok: string | null) => {
@@ -357,9 +336,8 @@ export default function AdminDashboard() {
           </div>
           <div className="grid grid-cols-7 gap-2">
             {allDays.map(day => {
-              const availableCount = availability.reduce((count, item) => {
-                return count + (item.availableDays.includes(day) ? 1 : 0);
-              }, 0);
+              const availableEmployees = getAvailableEmployeesForDay(day);
+              const availableCount = availableEmployees.length;
 
               const dayOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), day).getDay();
               const adjustedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
@@ -369,37 +347,57 @@ export default function AdminDashboard() {
               return (
                 <div
                   key={day}
-                  className={`aspect-square border rounded p-1 text-xs cursor-pointer transition-colors ${
+                  className={`border rounded p-2 text-xs ${
                     availableCount > 0
-                      ? 'bg-blue-50 border-blue-300 hover:bg-blue-100'
+                      ? 'bg-blue-50 border-blue-300'
                       : 'bg-gray-50 border-gray-200'
-                  } ${assignment ? 'ring-2 ring-green-300' : ''}`}
+                  }`}
                   style={{ gridColumn: day === 1 ? adjustedDay + 1 : undefined }}
-                  onClick={() => openDayModal(day)}
                 >
-                  <div className="text-center h-full flex flex-col justify-between">
-                    <div className="font-semibold text-gray-700">{day}</div>
+                  <div className="space-y-2">
+                    <div className="font-semibold text-gray-700 text-center">{day}</div>
 
-                    <div className="space-y-1 flex-1 flex flex-col justify-center">
-                      {!isTuesday && (
-                        <div className="text-blue-600">
-                          <div className="font-medium text-xs">B:</div>
-                          <div className="truncate text-xs" title={getUserName(assignment?.bagiety) || ''}>
-                            {getUserName(assignment?.bagiety) || '-'}
+                    {availableCount > 0 ? (
+                      <>
+                        {!isTuesday && (
+                          <div>
+                            <label className="block text-xs font-medium text-blue-600 mb-1">🥖 Bagiety</label>
+                            <select
+                              value={assignment?.bagiety || ''}
+                              onChange={(e) => updateDayAssignment(day, e.target.value || null, assignment?.widok || null)}
+                              className="w-full px-1 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <option value="">--</option>
+                              {availableEmployees.map((emp) => (
+                                <option key={emp.userId} value={emp.userId}>
+                                  {emp.user.name}
+                                </option>
+                              ))}
+                            </select>
                           </div>
-                        </div>
-                      )}
-                      <div className="text-green-600">
-                        <div className="font-medium text-xs">W:</div>
-                        <div className="truncate text-xs" title={getUserName(assignment?.widok) || ''}>
-                          {getUserName(assignment?.widok) || '-'}
-                        </div>
-                      </div>
-                    </div>
+                        )}
 
-                    {availableCount > 0 && (
-                      <div className="text-xs text-gray-500">
-                        {availableCount} dost.
+                        <div>
+                          <label className="block text-xs font-medium text-green-600 mb-1">🌅 Widok</label>
+                          <select
+                            value={assignment?.widok || ''}
+                            onChange={(e) => updateDayAssignment(day, assignment?.bagiety || null, e.target.value || null)}
+                            className="w-full px-1 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <option value="">--</option>
+                            {availableEmployees.map((emp) => (
+                              <option key={emp.userId} value={emp.userId}>
+                                {emp.user.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center text-gray-400 text-xs py-2">
+                        Brak dostępnych
                       </div>
                     )}
                   </div>
@@ -409,10 +407,9 @@ export default function AdminDashboard() {
           </div>
           <div className="mt-4 text-xs text-gray-600">
             <div className="flex flex-wrap justify-center gap-4">
-              <span><strong>B:</strong> Bagiety</span>
-              <span><strong>W:</strong> Widok</span>
+              <span><strong>🥖 Bagiety</strong></span>
+              <span><strong>🌅 Widok</strong></span>
               <span className="text-orange-600">Wtorki: tylko Widok</span>
-              <span className="text-blue-600">Kliknij dzień aby przydzielić pracowników</span>
             </div>
           </div>
         </div>
@@ -464,153 +461,6 @@ export default function AdminDashboard() {
           onClose={() => setShowAddModal(false)}
           onSuccess={handleAddEmployeeSuccess}
         />
-
-        {/* Day Assignment Modal */}
-        {modal.isOpen && (
-          <DayAssignmentModal
-            day={modal.day}
-            year={currentDate.getFullYear()}
-            month={currentDate.getMonth() + 1}
-            availableEmployees={getAvailableEmployeesForDay(modal.day)}
-            currentAssignment={selectedAssignments[modal.day]}
-            onSave={(bagiety, widok) => {
-              updateDayAssignment(modal.day, bagiety, widok);
-              closeDayModal();
-            }}
-            onClose={closeDayModal}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Day Assignment Modal Component
-interface DayAssignmentModalProps {
-  day: number;
-  year: number;
-  month: number;
-  availableEmployees: AvailabilityWithUser[];
-  currentAssignment?: DayAssignment;
-  onSave: (bagiety: string | null, widok: string | null) => void;
-  onClose: () => void;
-}
-
-function DayAssignmentModal({
-  day,
-  year,
-  month,
-  availableEmployees,
-  currentAssignment,
-  onSave,
-  onClose
-}: DayAssignmentModalProps) {
-  const [bagiety, setBagiety] = useState<string>(currentAssignment?.bagiety || '');
-  const [widok, setWidok] = useState<string>(currentAssignment?.widok || '');
-
-  const dayOfWeek = new Date(year, month - 1, day).getDay();
-  const isTuesday = dayOfWeek === 2;
-  const dayNames = ['Niedziela', 'Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota'];
-
-  const handleSave = () => {
-    // Validation
-    if (bagiety && widok && bagiety === widok) {
-      alert('Nie można przydzielić tego samego pracownika do obu lokali!');
-      return;
-    }
-
-    onSave(bagiety || null, widok || null);
-  };
-
-  const clearAssignments = () => {
-    setBagiety('');
-    setWidok('');
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-        <h3 className="text-lg font-semibold mb-4">
-          Przydziel pracowników - {day} ({dayNames[dayOfWeek]})
-        </h3>
-
-        {availableEmployees.length === 0 ? (
-          <div className="text-center text-gray-500 py-4">
-            Brak dostępnych pracowników na ten dzień
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {!isTuesday && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  🥖 Bagiety
-                </label>
-                <select
-                  value={bagiety}
-                  onChange={(e) => setBagiety(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">-- Nie przydzielono --</option>
-                  {availableEmployees.map((emp) => (
-                    <option key={emp.userId} value={emp.userId}>
-                      {emp.user.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                🌅 Widok
-              </label>
-              <select
-                value={widok}
-                onChange={(e) => setWidok(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">-- Nie przydzielono --</option>
-                {availableEmployees.map((emp) => (
-                  <option key={emp.userId} value={emp.userId}>
-                    {emp.user.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {(bagiety && widok && bagiety === widok) && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-sm">
-                ⚠️ Ten sam pracownik nie może być w obu lokalach!
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="flex justify-between mt-6">
-          <div className="space-x-2">
-            <button
-              onClick={clearAssignments}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              Wyczyść
-            </button>
-          </div>
-          <div className="space-x-2">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              Anuluj
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={!!(bagiety && widok && bagiety === widok)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Zapisz
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
