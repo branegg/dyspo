@@ -100,8 +100,6 @@ export default function AdminDashboard() {
             widok: assignment.widok?.userId || undefined
           };
         });
-        console.log('Loaded assignments:', assignments);
-        console.log('Employees:', employees);
         setSelectedAssignments(assignments);
       } else {
         setSchedule(null);
