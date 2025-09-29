@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all users for lookup
-    const userIds = [];
+    const userIds: string[] = [];
     schedule.assignments.forEach((assignment: any) => {
       if (assignment.bagiety) userIds.push(assignment.bagiety);
       if (assignment.widok) userIds.push(assignment.widok);
