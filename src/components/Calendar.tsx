@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CalendarProps {
   year: number;
@@ -10,16 +10,11 @@ interface CalendarProps {
 }
 
 export default function Calendar({ year, month, selectedDays, onDayToggle }: CalendarProps) {
+  const { t } = useLanguage();
+
   const daysInMonth = new Date(year, month, 0).getDate();
   const firstDayOfMonth = new Date(year, month - 1, 1).getDay();
   const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
-
-  const monthNames = [
-    'Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
-    'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'
-  ];
-
-  const dayNames = ['Pon', 'Wto', 'Śro', 'Czw', 'Pią', 'Sob', 'Nie'];
 
   const days = [];
 
@@ -34,11 +29,11 @@ export default function Calendar({ year, month, selectedDays, onDayToggle }: Cal
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
       <h2 className="text-2xl font-bold text-center mb-6">
-        {monthNames[month - 1]} {year}
+        {t.months[month - 1]} {year}
       </h2>
 
       <div className="grid grid-cols-7 gap-2 mb-4">
-        {dayNames.map((dayName) => (
+        {t.dayNames.map((dayName) => (
           <div key={dayName} className="text-center font-semibold text-gray-600 py-2">
             {dayName}
           </div>
@@ -67,7 +62,7 @@ export default function Calendar({ year, month, selectedDays, onDayToggle }: Cal
       </div>
 
       <div className="mt-6 text-center text-sm text-gray-600">
-        Kliknij na dni, w które jesteś dostępny/a
+        {t.clickAvailableDays}
       </div>
     </div>
   );

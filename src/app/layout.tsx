@@ -1,11 +1,12 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
+import { LanguageProvider } from '@/contexts/LanguageContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'System Dyspozycyjności',
-  description: 'Aplikacja do zarządzania dyspozycyjnością pracowników',
+  title: 'Employee Availability System',
+  description: 'Application for managing employee availability',
 }
 
 export default function RootLayout({
@@ -14,8 +15,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pl">
-      <body className={inter.className}>{children}</body>
+    <html lang="en">
+      <body className={inter.className}>
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
+      </body>
     </html>
   )
 }

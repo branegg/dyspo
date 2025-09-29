@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Calendar from '@/components/Calendar';
 import ScheduleDisplay from '@/components/ScheduleDisplay';
 
@@ -13,6 +15,7 @@ export default function EmployeeDashboard() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const router = useRouter();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -93,12 +96,12 @@ export default function EmployeeDashboard() {
 
       const data = await response.json();
       if (response.ok) {
-        setMessage('Dyspozycyjność została zapisana!');
+        setMessage(t.availabilitySaved);
       } else {
-        setMessage(data.error || 'Błąd podczas zapisywania');
+        setMessage(data.error || t.saveError);
       }
     } catch (error) {
-      setMessage('Błąd połączenia z serwerem');
+      setMessage(t.connectionError);
     } finally {
       setSaving(false);
     }
@@ -123,10 +126,10 @@ export default function EmployeeDashboard() {
     router.push('/');
   };
 
-  if (loading) {
+  if (loading || !t) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-xl">Ładowanie...</div>
+        <div className="text-xl">{t?.loading || 'Loading...'}</div>
       </div>
     );
   }
@@ -137,16 +140,19 @@ export default function EmployeeDashboard() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Panel Pracownika
+              {t.employeePanel}
             </h1>
-            <p className="text-gray-600">Witaj, {user?.name}!</p>
+            <p className="text-gray-600">{t.welcome}, {user?.name}!</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
-          >
-            Wyloguj się
-          </button>
+          <div className="flex items-center space-x-4">
+            <LanguageSwitcher />
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+            >
+              {t.logout}
+            </button>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
@@ -155,13 +161,13 @@ export default function EmployeeDashboard() {
               onClick={() => handleMonthChange('prev')}
               className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
             >
-              ← Poprzedni miesiąc
+              {t.previousMonth}
             </button>
             <button
               onClick={() => handleMonthChange('next')}
               className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
             >
-              Następny miesiąc →
+              {t.nextMonth}
             </button>
           </div>
 
@@ -174,7 +180,7 @@ export default function EmployeeDashboard() {
 
           <div className="mt-6 text-center">
             <p className="text-gray-600 mb-4">
-              Wybrane dni: {selectedDays.length > 0 ? selectedDays.join(', ') : 'Brak wybranych dni'}
+              {t.selectedDays}: {selectedDays.length > 0 ? selectedDays.join(', ') : t.noSelectedDays}
             </p>
 
             <button
@@ -182,12 +188,12 @@ export default function EmployeeDashboard() {
               disabled={saving}
               className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50"
             >
-              {saving ? 'Zapisywanie...' : 'Zapisz dyspozycyjność'}
+              {saving ? t.saving : t.saveAvailability}
             </button>
 
             {message && (
               <div className={`mt-4 p-3 rounded ${
-                message.includes('zapisana') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                message.includes(t.availabilitySaved) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
               }`}>
                 {message}
               </div>

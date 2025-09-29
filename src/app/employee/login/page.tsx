@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function EmployeeLogin() {
   const [email, setEmail] = useState('');
@@ -11,12 +13,13 @@ export default function EmployeeLogin() {
   const [success, setSuccess] = useState('');
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (searchParams.get('registered') === 'true') {
-      setSuccess('Konto zostało utworzone! Możesz się teraz zalogować.');
+      setSuccess(t.accountCreated);
     }
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,10 +42,10 @@ export default function EmployeeLogin() {
         localStorage.setItem('user', JSON.stringify(data.user));
         router.push('/employee/dashboard');
       } else {
-        setError(data.error || 'Błąd podczas logowania');
+        setError(data.error || t.loginError);
       }
     } catch (error) {
-      setError('Błąd połączenia z serwerem');
+      setError(t.connectionError);
     } finally {
       setLoading(false);
     }
@@ -51,19 +54,23 @@ export default function EmployeeLogin() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+        <div className="flex justify-end mb-4">
+          <LanguageSwitcher />
+        </div>
+
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            Logowanie Pracownika
+            {t.employeeLogin}
           </h1>
           <p className="text-gray-600 mt-2">
-            Zaloguj się aby podać swoją dyspozycyjność
+            {t.employeeLoginSubtitle}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email
+              {t.email}
             </label>
             <input
               type="email"
@@ -72,13 +79,13 @@ export default function EmployeeLogin() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="twoj@email.com"
+              placeholder={t.emailPlaceholder}
             />
           </div>
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Hasło
+              {t.password}
             </label>
             <input
               type="password"
@@ -87,7 +94,7 @@ export default function EmployeeLogin() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Twoje hasło"
+              placeholder={t.passwordPlaceholder}
             />
           </div>
 
@@ -108,22 +115,22 @@ export default function EmployeeLogin() {
             disabled={loading}
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Logowanie...' : 'Zaloguj się'}
+            {loading ? t.loggingIn : t.login}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-gray-600">
-            Nie masz jeszcze konta?{' '}
+            {t.dontHaveAccount}{' '}
             <a href="/employee/register" className="text-blue-600 hover:underline">
-              Zarejestruj się
+              {t.register}
             </a>
           </p>
         </div>
 
         <div className="mt-4 text-center">
           <a href="/" className="text-blue-600 hover:underline text-sm">
-            Powrót do strony głównej
+            {t.backToHome}
           </a>
         </div>
       </div>

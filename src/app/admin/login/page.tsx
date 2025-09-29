@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -9,6 +11,7 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +31,7 @@ export default function AdminLogin() {
 
       if (response.ok) {
         if (data.user.role !== 'admin') {
-          setError('Brak uprawnień administratora');
+          setError(t.adminRightsError);
           return;
         }
 
@@ -36,10 +39,10 @@ export default function AdminLogin() {
         localStorage.setItem('user', JSON.stringify(data.user));
         router.push('/admin/dashboard');
       } else {
-        setError(data.error || 'Błąd podczas logowania');
+        setError(data.error || t.loginError);
       }
     } catch (error) {
-      setError('Błąd połączenia z serwerem');
+      setError(t.connectionError);
     } finally {
       setLoading(false);
     }
@@ -48,19 +51,23 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+        <div className="flex justify-end mb-4">
+          <LanguageSwitcher />
+        </div>
+
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            Panel Administratora
+            {t.adminLogin}
           </h1>
           <p className="text-gray-600 mt-2">
-            Zaloguj się aby zarządzać dyspozycyjnością
+            {t.adminLoginSubtitle}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email
+              {t.email}
             </label>
             <input
               type="email"
@@ -69,13 +76,13 @@ export default function AdminLogin() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="admin@email.com"
+              placeholder={t.adminEmailPlaceholder}
             />
           </div>
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Hasło
+              {t.password}
             </label>
             <input
               type="password"
@@ -84,7 +91,7 @@ export default function AdminLogin() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="Twoje hasło"
+              placeholder={t.adminPasswordPlaceholder}
             />
           </div>
 
@@ -99,13 +106,13 @@ export default function AdminLogin() {
             disabled={loading}
             className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Logowanie...' : 'Zaloguj się'}
+            {loading ? t.loggingIn : t.login}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <a href="/" className="text-green-600 hover:underline">
-            Powrót do strony głównej
+            {t.backToHome}
           </a>
         </div>
       </div>
