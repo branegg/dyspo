@@ -66,7 +66,14 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
 
       if (response.ok) {
         const data = await response.json();
-        setSchedule(data);
+        // Handle different response formats from admin vs employee endpoints
+        if (userRole === 'admin' && data.schedule) {
+          setSchedule(data.schedule);
+        } else if (userRole === 'employee') {
+          setSchedule(data);
+        } else {
+          setSchedule(null);
+        }
       } else if (response.status === 404) {
         setSchedule(null);
       } else {
@@ -95,7 +102,7 @@ export default function ScheduleDisplay({ year, month, userRole, userId }: Sched
   };
 
   const getAssignmentForDay = (day: number) => {
-    if (!schedule) return null;
+    if (!schedule || !schedule.assignments) return null;
     return schedule.assignments.find(assignment => assignment.day === day);
   };
 
