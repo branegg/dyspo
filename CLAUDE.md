@@ -24,10 +24,12 @@ src/
 │   │   │   └── register/route.ts    # Rejestracja użytkowników
 │   │   ├── admin/
 │   │   │   ├── availability/route.ts # Admin - pobieranie dyspozycyjności
-│   │   │   └── employees/route.ts    # Admin - zarządzanie pracownikami
+│   │   │   ├── employees/route.ts    # Admin - zarządzanie pracownikami
+│   │   │   └── schedule/route.ts     # Admin - budowanie grafiku
 │   │   └── availability/route.ts     # Pracownik - dyspozycyjność
 │   ├── employee/
 │   │   ├── login/page.tsx           # Logowanie pracownika
+│   │   ├── register/page.tsx        # Rejestracja pracownika
 │   │   └── dashboard/page.tsx       # Panel pracownika
 │   ├── admin/
 │   │   ├── login/page.tsx           # Logowanie admina
@@ -37,7 +39,8 @@ src/
 │   └── globals.css                  # Style globalne
 ├── components/
 │   ├── Calendar.tsx                 # Komponent kalendarza
-│   └── AddEmployeeModal.tsx         # Modal dodawania pracowników
+│   ├── AddEmployeeModal.tsx         # Modal dodawania pracowników
+│   └── ScheduleBuilder.tsx          # Modal budowania grafiku
 ├── lib/
 │   ├── mongodb.ts                   # Połączenie z MongoDB
 │   └── auth.ts                      # Funkcje autentykacji
@@ -48,20 +51,24 @@ src/
 ## Funkcjonalności
 
 ### Panel Pracownika
-- Logowanie z email/hasło
-- Kalendarz miesięczny do zaznaczania dostępnych dni
-- Zapis i edycja dyspozycyjności
-- Nawigacja między miesiącami
-- Bezpieczne wylogowanie
+- **Rejestracja samodzielna** - Pracownicy mogą sami założyć konto
+- **Logowanie z email/hasło** - Bezpieczna autentykacja JWT
+- **Kalendarz miesięczny** - Intuicyjne zaznaczanie dostępnych dni
+- **Zapis i edycja dyspozycyjności** - Natychmiastowe zapisywanie w bazie
+- **Nawigacja między miesiącami** - Planowanie na przyszłe okresy
+- **Bezpieczne wylogowanie** - Zarządzanie sesjami
 
 ### Panel Administratora
-- Logowanie z uprawnieniami administratora
-- Przeglądanie dyspozycyjności wszystkich pracowników
-- Tabela z dostępnością pracowników w danym miesiącu
-- Podsumowanie dostępności w formie kalendarza
-- Dodawanie nowych pracowników
-- Lista wszystkich pracowników z datą rejestracji
-- Zarządzanie miesiącami
+- **Logowanie z uprawnieniami administratora** - Osobne konto admin
+- **Przeglądanie dyspozycyjności** - Wszystkich pracowników w jednym miejscu
+- **Tabela dostępności** - Przejrzysty widok na dany miesiąc
+- **Podsumowanie kalendarza** - Wizualizacja liczby dostępnych pracowników
+- **Dodawanie pracowników** - Modal do tworzenia nowych kont
+- **Lista pracowników** - Zarządzanie zespołem z datami rejestracji
+- **Budowanie grafiku pracy** - Przydzielanie pracowników do lokali
+- **Obsługa dwóch lokali** - Bagiety i Widok z regułami biznesowymi
+- **Specjalne zasady** - Wtorki bez pracy na Bagiety
+- **Zarządzanie miesiącami** - Planowanie na różne okresy
 
 ## Modele Danych
 
@@ -90,6 +97,24 @@ interface Availability {
 }
 ```
 
+### Schedule
+```typescript
+interface Schedule {
+  _id?: string;
+  year: number;
+  month: number;
+  assignments: DayAssignment[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface DayAssignment {
+  day: number;
+  bagiety?: string; // userId - null for Tuesdays
+  widok?: string;   // userId
+}
+```
+
 ## API Endpoints
 
 ### Autentykacja
@@ -104,6 +129,8 @@ interface Availability {
 - `GET /api/admin/availability` - Pobieranie dyspozycyjności wszystkich pracowników
 - `GET /api/admin/employees` - Lista wszystkich pracowników
 - `POST /api/admin/employees` - Tworzenie nowych pracowników
+- `GET /api/admin/schedule` - Pobieranie grafiku pracy z danymi użytkowników
+- `POST /api/admin/schedule` - Zapisywanie/aktualizacja grafiku pracy
 
 ## Bezpieczeństwo
 
@@ -124,8 +151,9 @@ NEXTAUTH_SECRET=your-nextauth-secret
 ```
 
 ### MongoDB Collections
-- `users` - dane użytkowników
-- `availability` - dyspozycyjność pracowników
+- `users` - dane użytkowników (pracownicy i administratorzy)
+- `availability` - dyspozycyjność pracowników na poszczególne miesiące
+- `schedules` - grafiki pracy z przydziałami do lokali
 
 ## Deployment
 
@@ -142,16 +170,19 @@ Aplikacja jest automatycznie deployowana na Vercel przy każdym push do główne
 ## Użytkowanie
 
 ### Dla Administratorów
-1. Logowanie na `/admin/login`
-2. Dodawanie pracowników przez przycisk "Dodaj Pracownika"
-3. Przeglądanie dyspozycyjności w tabeli i kalendarzu
-4. Zarządzanie listą pracowników
+1. **Logowanie** na `/admin/login`
+2. **Dodawanie pracowników** przez przycisk "Dodaj Pracownika"
+3. **Przeglądanie dyspozycyjności** w tabeli i kalendarzu
+4. **Budowanie grafiku** przez przycisk "Buduj Grafik"
+5. **Przydzielanie do lokali** - Bagiety i Widok dla każdego dnia
+6. **Zarządzanie listą pracowników** z datami rejestracji
 
 ### Dla Pracowników
-1. Logowanie na `/employee/login`
-2. Wybór dostępnych dni w kalendarzu
-3. Zapisanie dyspozycyjności przyciskiem "Zapisz"
-4. Edycja w dowolnym momencie
+1. **Rejestracja** na `/employee/register` (opcjonalnie)
+2. **Logowanie** na `/employee/login`
+3. **Wybór dostępnych dni** w kalendarzu miesięcznym
+4. **Zapisanie dyspozycyjności** przyciskiem "Zapisz"
+5. **Edycja w dowolnym momencie** - aktualizacja istniejącej dyspozycyjności
 
 ## Komendy Deweloperskie
 
