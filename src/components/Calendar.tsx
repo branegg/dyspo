@@ -34,8 +34,8 @@ export default function Calendar({ year, month, selectedDays, onDayToggle }: Cal
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h2 className="text-2xl font-bold text-center mb-6">
+    <div className="bg-white rounded-lg shadow-lg p-3 sm:p-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6">
         {t.months[month - 1]} {year}
       </h2>
 
@@ -47,7 +47,7 @@ export default function Calendar({ year, month, selectedDays, onDayToggle }: Cal
         showMonthTitle={false}
       />
 
-      <div className="mt-6 text-center text-sm text-gray-600">
+      <div className="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-gray-600">
         {t.clickAvailableDays}
       </div>
     </div>
