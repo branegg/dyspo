@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import UnifiedCalendar from './UnifiedCalendar';
+import BagietyLoader from './BagietyLoader';
 
 interface DayAssignmentWithUsers {
   day: number;
@@ -127,15 +128,8 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded mb-4 w-1/3"></div>
-          <div className="grid grid-cols-7 gap-2">
-            {Array.from({ length: 35 }).map((_, i) => (
-              <div key={i} className="h-20 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-        </div>
+      <div className="bg-white rounded-lg shadow p-6 flex items-center justify-center min-h-[300px]">
+        <BagietyLoader size="medium" />
       </div>
     );
   }

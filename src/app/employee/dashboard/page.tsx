@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Calendar from '@/components/Calendar';
 import ScheduleDisplay from '@/components/ScheduleDisplay';
+import BagietyLoader from '@/components/BagietyLoader';
 
 type TabType = 'availability' | 'schedule' | 'mySchedule';
 
@@ -188,7 +189,7 @@ export default function EmployeeDashboard() {
   if (loading || !t) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-xl">{t?.loading || 'Loading...'}</div>
+        <BagietyLoader size="large" />
       </div>
     );
   }

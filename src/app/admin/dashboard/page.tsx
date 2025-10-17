@@ -7,6 +7,7 @@ import AddEmployeeModal from '@/components/AddEmployeeModal';
 import EditEmployeeModal from '@/components/EditEmployeeModal';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
+import BagietyLoader from '@/components/BagietyLoader';
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<any>(null);
@@ -261,7 +262,7 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center">
-        <div className="text-xl">Ładowanie...</div>
+        <BagietyLoader size="large" />
       </div>
     );
   }
