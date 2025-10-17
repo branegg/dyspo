@@ -140,6 +140,11 @@ export interface Translations {
   // Panel Switching
   switchToAdminPanel: string;
   switchToEmployeePanel: string;
+
+  // Availability Reminder
+  availabilityReminderTitle: string;
+  availabilityReminderMessage: string;
+  setAvailabilityNow: string;
 }
 
 export const translations: Record<string, Translations> = {
@@ -287,7 +292,12 @@ export const translations: Record<string, Translations> = {
 
     // Panel Switching
     switchToAdminPanel: 'Przejdź do Panelu Administratora',
-    switchToEmployeePanel: 'Przejdź do Panelu Pracownika'
+    switchToEmployeePanel: 'Przejdź do Panelu Pracownika',
+
+    // Availability Reminder
+    availabilityReminderTitle: 'Przypomnienie o dyspozycyjności',
+    availabilityReminderMessage: 'Nie dodałeś jeszcze swojej dyspozycyjności na następny miesiąc. Prosimy o uzupełnienie jak najszybciej.',
+    setAvailabilityNow: 'Ustaw dyspozycyjność teraz'
   },
 
   en: {
@@ -434,6 +444,11 @@ export const translations: Record<string, Translations> = {
 
     // Panel Switching
     switchToAdminPanel: 'Switch to Admin Panel',
-    switchToEmployeePanel: 'Switch to Employee Panel'
+    switchToEmployeePanel: 'Switch to Employee Panel',
+
+    // Availability Reminder
+    availabilityReminderTitle: 'Availability Reminder',
+    availabilityReminderMessage: 'You haven\'t added your availability for next month yet. Please complete it as soon as possible.',
+    setAvailabilityNow: 'Set availability now'
   }
 };

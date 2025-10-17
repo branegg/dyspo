@@ -17,6 +17,8 @@ export default function EmployeeDashboard() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('availability');
+  const [showReminder, setShowReminder] = useState(false);
+  const [hasNextMonthAvailability, setHasNextMonthAvailability] = useState(true);
   const router = useRouter();
   const { t } = useLanguage();
 
@@ -38,6 +40,11 @@ export default function EmployeeDashboard() {
 
     setUser(parsedUser);
     loadAvailability(token);
+
+    // Only check for next month availability reminder for employees (not admins)
+    if (parsedUser.role === 'employee') {
+      checkNextMonthAvailability(token);
+    }
   }, [currentDate]);
 
   const loadAvailability = async (token: string) => {
@@ -61,6 +68,44 @@ export default function EmployeeDashboard() {
       console.error('Error loading availability:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkNextMonthAvailability = async (token: string) => {
+    try {
+      // Check if today is after the 15th
+      const today = new Date();
+      const dayOfMonth = today.getDate();
+
+      if (dayOfMonth > 15) {
+        // Calculate next month
+        const nextMonth = new Date(today);
+        nextMonth.setMonth(today.getMonth() + 1);
+
+        const year = nextMonth.getFullYear();
+        const month = nextMonth.getMonth() + 1;
+
+        const response = await fetch(`/api/availability?year=${year}&month=${month}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        // Show reminder if no availability for next month
+        if (!data.availability || !data.availability.availableDays || data.availability.availableDays.length === 0) {
+          setHasNextMonthAvailability(false);
+          setShowReminder(true);
+        } else {
+          setHasNextMonthAvailability(true);
+          setShowReminder(false);
+        }
+      } else {
+        setShowReminder(false);
+      }
+    } catch (error) {
+      console.error('Error checking next month availability:', error);
     }
   };
 
@@ -130,6 +175,16 @@ export default function EmployeeDashboard() {
     router.push('/');
   };
 
+  const handleSetAvailabilityForNextMonth = () => {
+    // Navigate to next month and switch to availability tab
+    const nextMonth = new Date();
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    setCurrentDate(nextMonth);
+    setActiveTab('availability');
+    setShowReminder(false);
+    setLoading(true);
+  };
+
   if (loading || !t) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -166,6 +221,43 @@ export default function EmployeeDashboard() {
             </button>
           </div>
         </div>
+
+        {/* Availability Reminder Banner */}
+        {showReminder && user?.role === 'employee' && (
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 p-6 mb-6 rounded-lg shadow-lg">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="ml-3 flex-1">
+                <h3 className="text-lg font-bold text-yellow-900">
+                  {t.availabilityReminderTitle}
+                </h3>
+                <p className="mt-2 text-sm text-yellow-800">
+                  {t.availabilityReminderMessage}
+                </p>
+                <button
+                  onClick={handleSetAvailabilityForNextMonth}
+                  className="mt-4 bg-yellow-600 text-white px-6 py-2 rounded-lg hover:bg-yellow-700 font-semibold"
+                >
+                  {t.setAvailabilityNow}
+                </button>
+              </div>
+              <div className="ml-3">
+                <button
+                  onClick={() => setShowReminder(false)}
+                  className="text-yellow-600 hover:text-yellow-800"
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="bg-white rounded-t-lg shadow-lg">
