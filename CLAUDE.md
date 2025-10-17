@@ -1,4 +1,6 @@
-# Employee Availability System - Claude Code
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Description
 
@@ -13,40 +15,28 @@ Web application for managing employee availability with an admin panel, built us
 - **Deployment**: Vercel
 - **Tools**: Git, GitHub CLI, Vercel CLI
 
-## Project Structure
+## Core Architecture
 
-```
-src/
-├── app/
-│   ├── api/
-│   │   ├── auth/
-│   │   │   ├── login/route.ts       # User login
-│   │   │   └── register/route.ts    # User registration
-│   │   ├── admin/
-│   │   │   ├── availability/route.ts # Admin - fetch availability
-│   │   │   ├── employees/route.ts    # Admin - manage employees
-│   │   │   └── schedule/route.ts     # Admin - build schedule
-│   │   └── availability/route.ts     # Employee - availability
-│   ├── employee/
-│   │   ├── login/page.tsx           # Employee login
-│   │   ├── register/page.tsx        # Employee registration
-│   │   └── dashboard/page.tsx       # Employee panel
-│   ├── admin/
-│   │   ├── login/page.tsx           # Admin login
-│   │   └── dashboard/page.tsx       # Admin panel
-│   ├── layout.tsx                   # App layout
-│   ├── page.tsx                     # Home page
-│   └── globals.css                  # Global styles
-├── components/
-│   ├── Calendar.tsx                 # Calendar component
-│   ├── AddEmployeeModal.tsx         # Add employee modal
-│   └── ScheduleBuilder.tsx          # Schedule builder modal
-├── lib/
-│   ├── mongodb.ts                   # MongoDB connection
-│   └── auth.ts                      # Authentication functions
-└── types/
-    └── index.ts                     # TypeScript type definitions
-```
+### Internationalization (i18n)
+The app uses a custom i18n system with React Context:
+- **LanguageContext** (`src/contexts/LanguageContext.tsx`): Provides language state and translations
+- **Translations** (`src/lib/translations.ts`): Contains all UI strings in Polish and English
+- **Usage**: Always use `const { t } = useLanguage()` and reference strings via `t.keyName`
+- **CRITICAL**: Never hardcode user-facing text - always use i18n keys
+
+### Authentication Flow
+- JWT-based authentication with tokens stored in localStorage
+- Tokens contain: `userId`, `email`, `role`
+- `src/lib/auth.ts` provides: `hashPassword`, `comparePassword`, `generateToken`, `verifyToken`
+- Role-based access: `employee` | `admin`
+- Admin routes check role on both client and API level
+
+### Database Access
+- MongoDB connection managed via `src/lib/mongodb.ts`
+- Uses singleton pattern in development to prevent connection exhaustion
+- Database name: `dyspo`
+- Collections: `users`, `availability`, `schedules`
+- Always use `getDatabase()` function to access the database
 
 ## Features
 
@@ -72,65 +62,55 @@ src/
 
 ## Data Models
 
+All types defined in `src/types/index.ts`
+
 ### User
-```typescript
-interface User {
-  _id?: string;
-  email: string;
-  name: string;
-  role: 'employee' | 'admin';
-  hashedPassword: string;
-  createdAt: Date;
-}
-```
+- `_id`: MongoDB ObjectId (optional)
+- `email`: Unique email address
+- `name`: Full name
+- `role`: `'employee' | 'admin'`
+- `hashedPassword`: bcrypt hashed password
+- `createdAt`: Registration timestamp
 
 ### Availability
-```typescript
-interface Availability {
-  _id?: string;
-  userId: string;
-  year: number;
-  month: number;
-  availableDays: number[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-```
+- `userId`: Reference to User._id (string format)
+- `year`, `month`: Period identifier
+- `availableDays`: Array of day numbers (1-31)
+- **AvailabilityWithUser**: Extended with `user: { name, email }` for admin views
 
 ### Schedule
-```typescript
-interface Schedule {
-  _id?: string;
-  year: number;
-  month: number;
-  assignments: DayAssignment[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface DayAssignment {
-  day: number;
-  bagiety?: string; // userId - null for Tuesdays
-  widok?: string;   // userId
-}
-```
+- `year`, `month`: Period identifier
+- `assignments`: Array of DayAssignment
+  - `day`: Day number (1-31)
+  - `bagiety`: userId or null (null on Tuesdays - business rule)
+  - `widok`: userId or undefined
+- **ScheduleWithUsers**: Extended with full user objects `{ userId, name, email }` instead of just userIds
 
 ## API Endpoints
 
-### Authentication
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - Register new user
+### Authentication (`src/app/api/auth/`)
+- `POST /api/auth/login` - User login (returns JWT token)
+- `POST /api/auth/register` - Register new user (creates employee by default, admin via role param)
 
-### Employee
-- `GET /api/availability` - Fetch availability
-- `POST /api/availability` - Save availability
+### Employee (`src/app/api/`)
+- `GET /api/availability?year=YYYY&month=M` - Fetch user's availability (requires JWT)
+- `POST /api/availability` - Save availability (requires JWT, body: `{ year, month, availableDays }`)
+- `GET /api/schedule?year=YYYY&month=M` - Fetch user's schedule assignments (requires JWT)
 
-### Administrator
-- `GET /api/admin/availability` - Fetch all employee availability
-- `GET /api/admin/employees` - List all employees
-- `POST /api/admin/employees` - Create new employees
-- `GET /api/admin/schedule` - Fetch work schedule with user data
-- `POST /api/admin/schedule` - Save/update work schedule
+### Administrator (`src/app/api/admin/`)
+All admin endpoints require JWT with `role: 'admin'`
+- `GET /api/admin/availability?year=YYYY&month=M` - Fetch all employees' availability
+- `GET /api/admin/employees` - List all employees with registration dates
+- `POST /api/admin/employees` - Create new employee (body: `{ name, email, password }`)
+- `PUT /api/admin/employees` - Update employee (body: `{ id, name, email, password? }`)
+- `DELETE /api/admin/employees?id=USER_ID` - Delete employee
+- `GET /api/admin/schedule?year=YYYY&month=M` - Fetch work schedule with full user data
+- `POST /api/admin/schedule` - Save/update schedule (body: `{ year, month, assignments }`)
+
+### Common Patterns
+- Authentication: Include `Authorization: Bearer <token>` header
+- Error responses: `{ error: 'message' }` with appropriate HTTP status
+- Success responses: `{ success: true, ... }` or data object
 
 ## Security
 
@@ -190,56 +170,62 @@ Application is automatically deployed to Vercel on every push to the main GitHub
 # Install dependencies
 npm install
 
-# Run locally
+# Run development server (http://localhost:3000)
 npm run dev
 
-# Production build
+# Build for production
 npm run build
+
+# Start production server
+npm start
 
 # Linting
 npm run lint
-
-# Vercel deployment
-vercel --prod
-
-# Add environment variables
-vercel env add MONGODB_URI production
 ```
 
-## Git Workflow
+### Creating First Admin User
+```bash
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@example.com",
+    "password": "securepassword",
+    "name": "Administrator",
+    "role": "admin"
+  }'
+```
 
-All changes committed with descriptive messages containing:
-- Feature description
-- 🤖 Generated with [Claude Code](https://claude.com/claude-code)
-- Co-Authored-By: Claude <noreply@anthropic.com>
+## Important Development Rules
 
-## Development History
+1. **Always use i18n**: Never hardcode user-facing text. All UI strings must use the translation system via `useLanguage()` hook and `t.keyName` references.
 
-1. **Project initialization** - Next.js setup with TypeScript and Tailwind
-2. **MongoDB configuration** - connection and data models
-3. **Authentication system** - JWT, hashing, API endpoints
-4. **Employee panel** - calendar, availability
-5. **Admin panel** - data viewing
-6. **Employee management** - adding by admin
-7. **Deployment fixes** - Vercel config, MongoDB lookup
+2. **Always commit and push changes**: After completing tasks, commit with descriptive messages and push to remote.
 
-## Future Extensions
+3. **File creation**: Only create new files when absolutely necessary. Always prefer editing existing files.
 
-Potential features to add:
-- Email notifications
-- Export availability to CSV/PDF
-- Statistics and reports
-- Availability templates
-- Integration with external calendars
-- Mobile app (React Native)
+4. **Commit message format**:
+   ```
+   Feature description
 
-## Authors
+   🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Project created in collaboration with Claude Code - AI development assistant from Anthropic.
-- always commit and push the changes
-- always use i18n, never hardcoded copy
-# important-instruction-reminders
-Do what has been asked; nothing more, nothing less.
-NEVER create files unless they're absolutely necessary for achieving your goal.
-ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+   Co-Authored-By: Claude <noreply@anthropic.com>
+   ```
+
+## Common Tasks
+
+### Adding a new translation key
+1. Add key to `Translations` interface in `src/lib/translations.ts`
+2. Add Polish translation in `translations.pl`
+3. Add English translation in `translations.en`
+4. Use in component: `const { t } = useLanguage()` then `{t.newKey}`
+
+### Working with user data
+- User IDs are stored as strings (MongoDB ObjectId converted to string)
+- Always verify JWT token on protected API routes
+- Check role for admin-only operations: `decoded.role === 'admin'`
+
+### Schedule business rules
+- Bagiety location: No assignments on Tuesdays (day of week check required)
+- Widok location: Can be assigned any day
+- Only assign employees who marked themselves available for that day

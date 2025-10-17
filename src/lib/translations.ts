@@ -136,6 +136,10 @@ export interface Translations {
   // My Schedule
   mySchedule: string;
   noAssignmentsThisMonth: string;
+
+  // Panel Switching
+  switchToAdminPanel: string;
+  switchToEmployeePanel: string;
 }
 
 export const translations: Record<string, Translations> = {
@@ -279,7 +283,11 @@ export const translations: Record<string, Translations> = {
 
     // My Schedule
     mySchedule: 'Mój Grafik',
-    noAssignmentsThisMonth: 'Brak przydziałów w tym miesiącu'
+    noAssignmentsThisMonth: 'Brak przydziałów w tym miesiącu',
+
+    // Panel Switching
+    switchToAdminPanel: 'Przejdź do Panelu Administratora',
+    switchToEmployeePanel: 'Przejdź do Panelu Pracownika'
   },
 
   en: {
@@ -422,6 +430,10 @@ export const translations: Record<string, Translations> = {
 
     // My Schedule
     mySchedule: 'My Schedule',
-    noAssignmentsThisMonth: 'No assignments this month'
+    noAssignmentsThisMonth: 'No assignments this month',
+
+    // Panel Switching
+    switchToAdminPanel: 'Switch to Admin Panel',
+    switchToEmployeePanel: 'Switch to Employee Panel'
   }
 };

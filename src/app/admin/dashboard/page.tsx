@@ -279,8 +279,14 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
             <button
-              onClick={() => setShowAddModal(true)}
+              onClick={() => router.push('/employee/dashboard')}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            >
+              {t.switchToEmployeePanel}
+            </button>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
             >
               {t.addEmployee}
             </button>

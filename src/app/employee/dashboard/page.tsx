@@ -30,7 +30,8 @@ export default function EmployeeDashboard() {
     }
 
     const parsedUser = JSON.parse(userData);
-    if (parsedUser.role !== 'employee') {
+    // Allow both employees and admins to access this dashboard
+    if (parsedUser.role !== 'employee' && parsedUser.role !== 'admin') {
       router.push('/');
       return;
     }
@@ -149,6 +150,14 @@ export default function EmployeeDashboard() {
           </div>
           <div className="flex items-center space-x-4">
             <LanguageSwitcher />
+            {user?.role === 'admin' && (
+              <button
+                onClick={() => router.push('/admin/dashboard')}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+              >
+                {t.switchToAdminPanel}
+              </button>
+            )}
             <button
               onClick={handleLogout}
               className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
