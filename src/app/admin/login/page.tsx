@@ -49,22 +49,22 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center py-12 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center py-6 sm:py-12 px-4">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 sm:p-8">
         <div className="flex justify-end mb-4">
           <LanguageSwitcher />
         </div>
 
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             {t.adminLogin}
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-sm sm:text-base text-gray-600 mt-2">
             {t.adminLoginSubtitle}
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
               {t.email}
@@ -75,7 +75,7 @@ export default function AdminLogin() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder={t.adminEmailPlaceholder}
             />
           </div>
@@ -90,13 +90,13 @@ export default function AdminLogin() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder={t.adminPasswordPlaceholder}
             />
           </div>
 
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded text-sm sm:text-base">
               {error}
             </div>
           )}
@@ -104,14 +104,14 @@ export default function AdminLogin() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-green-600 text-white py-2.5 sm:py-3 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium"
           >
             {loading ? t.loggingIn : t.login}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <a href="/" className="text-green-600 hover:underline">
+        <div className="mt-4 sm:mt-6 text-center">
+          <a href="/" className="text-green-600 hover:underline text-sm sm:text-base">
             {t.backToHome}
           </a>
         </div>

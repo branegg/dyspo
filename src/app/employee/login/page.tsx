@@ -52,22 +52,22 @@ export default function EmployeeLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-6 sm:py-12 px-4">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 sm:p-8">
         <div className="flex justify-end mb-4">
           <LanguageSwitcher />
         </div>
 
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             {t.employeeLogin}
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-sm sm:text-base text-gray-600 mt-2">
             {t.employeeLoginSubtitle}
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
               {t.email}
@@ -78,7 +78,7 @@ export default function EmployeeLogin() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder={t.emailPlaceholder}
             />
           </div>
@@ -93,19 +93,19 @@ export default function EmployeeLogin() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder={t.passwordPlaceholder}
             />
           </div>
 
           {success && (
-            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+            <div className="bg-green-100 border border-green-400 text-green-700 px-3 sm:px-4 py-2 sm:py-3 rounded text-sm sm:text-base">
               {success}
             </div>
           )}
 
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded text-sm sm:text-base">
               {error}
             </div>
           )}
@@ -113,14 +113,14 @@ export default function EmployeeLogin() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 text-white py-2.5 sm:py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium"
           >
             {loading ? t.loggingIn : t.login}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">
+        <div className="mt-4 sm:mt-6 text-center">
+          <p className="text-sm sm:text-base text-gray-600">
             {t.dontHaveAccount}{' '}
             <a href="/employee/register" className="text-blue-600 hover:underline">
               {t.register}
@@ -128,7 +128,7 @@ export default function EmployeeLogin() {
           </p>
         </div>
 
-        <div className="mt-4 text-center">
+        <div className="mt-3 sm:mt-4 text-center">
           <a href="/" className="text-blue-600 hover:underline text-sm">
             {t.backToHome}
           </a>

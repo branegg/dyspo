@@ -268,52 +268,52 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-4 sm:py-8 px-2 sm:px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               {t.adminDashboard}
             </h1>
-            <p className="text-gray-600">{t.employeeAvailability}</p>
+            <p className="text-sm sm:text-base text-gray-600">{t.employeeAvailability}</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <LanguageSwitcher />
             <button
               onClick={() => router.push('/employee/dashboard')}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 text-xs sm:text-sm whitespace-nowrap"
             >
               {t.switchToEmployeePanel}
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+              className="bg-purple-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-purple-700 text-xs sm:text-sm whitespace-nowrap"
             >
               {t.addEmployee}
             </button>
             <button
               onClick={handleLogout}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+              className="bg-red-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-red-700 text-xs sm:text-sm"
             >
               {t.logout}
             </button>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex justify-between items-center mb-6">
+        <div className="bg-white rounded-lg shadow-lg p-3 sm:p-6 mb-4 sm:mb-6">
+          <div className="flex justify-between items-center mb-4 sm:mb-6 gap-2">
             <button
               onClick={() => handleMonthChange('prev')}
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+              className="bg-gray-500 text-white px-2 sm:px-4 py-2 rounded-lg hover:bg-gray-600 text-xs sm:text-base whitespace-nowrap"
             >
               {t.previousMonth}
             </button>
-            <h2 className="text-2xl font-bold">
+            <h2 className="text-lg sm:text-2xl font-bold text-center">
               {t.months[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
             <button
               onClick={() => handleMonthChange('next')}
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+              className="bg-gray-500 text-white px-2 sm:px-4 py-2 rounded-lg hover:bg-gray-600 text-xs sm:text-base whitespace-nowrap"
             >
               {t.nextMonth}
             </button>
