@@ -130,56 +130,52 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
     return locations;
   };
 
-  // Color palette for employees (distinct, accessible colors)
+  // Color palette for employees (MUST match admin dashboard exactly)
   const employeeColors = [
-    { bg: 'bg-blue-200', border: 'border-blue-500', text: 'text-blue-900', name: 'blue' },
-    { bg: 'bg-purple-200', border: 'border-purple-500', text: 'text-purple-900', name: 'purple' },
-    { bg: 'bg-pink-200', border: 'border-pink-500', text: 'text-pink-900', name: 'pink' },
-    { bg: 'bg-indigo-200', border: 'border-indigo-500', text: 'text-indigo-900', name: 'indigo' },
-    { bg: 'bg-cyan-200', border: 'border-cyan-500', text: 'text-cyan-900', name: 'cyan' },
-    { bg: 'bg-teal-200', border: 'border-teal-500', text: 'text-teal-900', name: 'teal' },
-    { bg: 'bg-orange-200', border: 'border-orange-500', text: 'text-orange-900', name: 'orange' },
-    { bg: 'bg-amber-200', border: 'border-amber-500', text: 'text-amber-900', name: 'amber' },
+    { bg: 'bg-blue-100', border: 'border-blue-300', text: 'text-blue-800' },
+    { bg: 'bg-purple-100', border: 'border-purple-300', text: 'text-purple-800' },
+    { bg: 'bg-pink-100', border: 'border-pink-300', text: 'text-pink-800' },
+    { bg: 'bg-orange-100', border: 'border-orange-300', text: 'text-orange-800' },
+    { bg: 'bg-teal-100', border: 'border-teal-300', text: 'text-teal-800' },
+    { bg: 'bg-indigo-100', border: 'border-indigo-300', text: 'text-indigo-800' },
   ];
 
-  // Assign color to employee based on their userId
-  const getEmployeeColor = (employeeUserId: string) => {
-    if (!employeeUserId) return employeeColors[0];
-
-    // Simple hash function to get consistent color for same user
-    let hash = 0;
-    for (let i = 0; i < employeeUserId.length; i++) {
-      hash = employeeUserId.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const index = Math.abs(hash) % employeeColors.length;
-    return employeeColors[index];
-  };
-
-  // Get unique employees from schedule (excluding current user)
+  // Get unique employees from schedule and create ordered list (excluding current user)
   const getUniqueEmployees = () => {
     if (!schedule) return [];
-    const employeeMap = new Map<string, { userId: string; name: string; color: any }>();
+    const employeeMap = new Map<string, { userId: string; name: string; index: number }>();
+    let index = 0;
 
     schedule.assignments.forEach((assignment: any) => {
-      if (assignment.bagiety && assignment.bagiety.userId !== userId) {
-        const color = getEmployeeColor(assignment.bagiety.userId);
+      if (assignment.bagiety && assignment.bagiety.userId !== userId && !employeeMap.has(assignment.bagiety.userId)) {
         employeeMap.set(assignment.bagiety.userId, {
           userId: assignment.bagiety.userId,
           name: assignment.bagiety.name,
-          color
+          index: index++
         });
       }
-      if (assignment.widok && assignment.widok.userId !== userId) {
-        const color = getEmployeeColor(assignment.widok.userId);
+      if (assignment.widok && assignment.widok.userId !== userId && !employeeMap.has(assignment.widok.userId)) {
         employeeMap.set(assignment.widok.userId, {
           userId: assignment.widok.userId,
           name: assignment.widok.name,
-          color
+          index: index++
         });
       }
     });
 
-    return Array.from(employeeMap.values());
+    return Array.from(employeeMap.values()).map(emp => ({
+      ...emp,
+      color: employeeColors[emp.index % employeeColors.length]
+    }));
+  };
+
+  // Assign color to employee based on their position in employee list
+  const getEmployeeColor = (employeeUserId: string) => {
+    if (!employeeUserId) return employeeColors[0];
+
+    const employees = getUniqueEmployees();
+    const employee = employees.find(emp => emp.userId === employeeUserId);
+    return employee ? employee.color : employeeColors[0];
   };
 
   const getDayBackgroundColor = (assignment: any, isTuesday: boolean, location: 'bagiety' | 'widok' | 'both') => {
@@ -301,7 +297,7 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
       content = (
         <div className="space-y-1 sm:space-y-1.5 w-full">
           {shouldShowBagiety && (
-            <div className={`rounded px-1 sm:px-1.5 py-0.5 sm:py-1 text-center border-2 ${
+            <div className={`rounded px-1 sm:px-1.5 py-0.5 sm:py-1 text-center border ${
               isUserAssigned && assignment?.bagiety?.userId === userId
                 ? 'bg-green-500 text-white font-semibold border-green-600'
                 : myScheduleOnly
@@ -317,7 +313,7 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
             </div>
           )}
           {shouldShowWidok && (
-            <div className={`rounded px-1 sm:px-1.5 py-0.5 sm:py-1 text-center border-2 ${
+            <div className={`rounded px-1 sm:px-1.5 py-0.5 sm:py-1 text-center border ${
               isUserAssigned && assignment?.widok?.userId === userId
                 ? 'bg-green-500 text-white font-semibold border-green-600'
                 : myScheduleOnly
@@ -602,13 +598,13 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
                   <div className="flex flex-wrap gap-2 sm:gap-3 items-center mb-3">
                     {/* Current user */}
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-500 border-2 border-green-600 rounded"></div>
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-500 border border-green-600 rounded"></div>
                       <span className="text-xs sm:text-sm font-semibold">{t.you || 'You'}</span>
                     </div>
                     {/* Other employees */}
                     {getUniqueEmployees().map((emp) => (
                       <div key={emp.userId} className="flex items-center gap-2">
-                        <div className={`w-6 h-6 sm:w-8 sm:h-8 ${emp.color.bg} border-2 ${emp.color.border} rounded`}></div>
+                        <div className={`w-6 h-6 sm:w-8 sm:h-8 ${emp.color.bg} border ${emp.color.border} rounded`}></div>
                         <span className="text-xs sm:text-sm">{emp.name}</span>
                       </div>
                     ))}
