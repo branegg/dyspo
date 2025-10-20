@@ -40,6 +40,7 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
   const [schedule, setSchedule] = useState<ScheduleWithUsers | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState<'bagiety' | 'widok' | 'both'>('both');
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -162,53 +163,92 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
 
     for (let day = 1; day <= daysInMonth; day++) {
       if (isUserAssignedToDay(day)) {
-        const locations = getUserAssignmentForDay(day);
-        myDays.push({ day, locations });
-      }
-    }
+        const assignment = getAssignmentForDay(day);
+        const locations = [];
 
-    if (myDays.length === 0) {
-      return (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            {t.mySchedule} - {t.months[month - 1]} {year}
-          </h3>
-          <div className="text-center text-gray-500 py-8">
-            {t.noAssignmentsThisMonth}
-          </div>
-        </div>
-      );
+        // Filter locations based on selectedLocation
+        if ((selectedLocation === 'bagiety' || selectedLocation === 'both') && assignment?.bagiety?.userId === userId) {
+          locations.push(t.bagiety);
+        }
+        if ((selectedLocation === 'widok' || selectedLocation === 'both') && assignment?.widok?.userId === userId) {
+          locations.push(t.widok);
+        }
+
+        if (locations.length > 0) {
+          myDays.push({ day, locations });
+        }
+      }
     }
 
     return (
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">
           {t.mySchedule} - {t.months[month - 1]} {year}
         </h3>
-        <div className="space-y-3">
-          {myDays.map(({ day, locations }) => {
-            const date = new Date(year, month - 1, day);
-            const dayName = t.dayNames[date.getDay() === 0 ? 6 : date.getDay() - 1];
 
-            return (
-              <div key={day} className="flex items-center gap-4 p-4 bg-green-50 border-2 border-green-300 rounded-lg">
-                <div className="font-bold text-2xl text-gray-700 w-16 text-center">
-                  {day}
-                </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-gray-800">{dayName}</div>
-                  <div className="flex gap-2 mt-2">
-                    {locations && locations.map((loc, idx) => (
-                      <div key={idx} className="bg-green-500 text-white px-3 py-1 rounded font-medium text-sm">
-                        {loc}
-                      </div>
-                    ))}
+        <div className="flex justify-center gap-2 mb-6">
+          <button
+            onClick={() => setSelectedLocation('bagiety')}
+            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+              selectedLocation === 'bagiety'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            🥖 {t.bagiety}
+          </button>
+          <button
+            onClick={() => setSelectedLocation('widok')}
+            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+              selectedLocation === 'widok'
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            🌅 {t.widok}
+          </button>
+          <button
+            onClick={() => setSelectedLocation('both')}
+            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+              selectedLocation === 'both'
+                ? 'bg-purple-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            {t.bothLocations}
+          </button>
+        </div>
+
+        {myDays.length === 0 ? (
+          <div className="text-center text-gray-500 py-8">
+            {t.noAssignmentsThisMonth}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {myDays.map(({ day, locations }) => {
+              const date = new Date(year, month - 1, day);
+              const dayName = t.dayNames[date.getDay() === 0 ? 6 : date.getDay() - 1];
+
+              return (
+                <div key={day} className="flex items-center gap-4 p-4 bg-green-50 border-2 border-green-300 rounded-lg">
+                  <div className="font-bold text-2xl text-gray-700 w-16 text-center">
+                    {day}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-800">{dayName}</div>
+                    <div className="flex gap-2 mt-2">
+                      {locations && locations.map((loc, idx) => (
+                        <div key={idx} className="bg-green-500 text-white px-3 py-1 rounded font-medium text-sm">
+                          {loc}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   }
@@ -259,7 +299,7 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
       // Employee view with location boxes
       content = (
         <div className="space-y-1.5 w-full">
-          {!isTuesday && (
+          {!isTuesday && (selectedLocation === 'bagiety' || selectedLocation === 'both') && (
             <div className={`rounded px-1.5 py-1 text-center ${
               isUserAssigned && assignment?.bagiety?.userId === userId
                 ? 'bg-green-500 text-white font-semibold'
@@ -271,16 +311,23 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
               </div>
             </div>
           )}
-          <div className={`rounded px-1.5 py-1 text-center ${
-            isUserAssigned && assignment?.widok?.userId === userId
-              ? 'bg-green-500 text-white font-semibold'
-              : 'bg-purple-100 border border-purple-300'
-          }`}>
-            <div className="text-[10px] font-bold mb-0.5">{t.widok}</div>
-            <div className="text-xs truncate" title={assignment?.widok?.name}>
-              {assignment?.widok?.name || '-'}
+          {(selectedLocation === 'widok' || selectedLocation === 'both') && (
+            <div className={`rounded px-1.5 py-1 text-center ${
+              isUserAssigned && assignment?.widok?.userId === userId
+                ? 'bg-green-500 text-white font-semibold'
+                : 'bg-purple-100 border border-purple-300'
+            }`}>
+              <div className="text-[10px] font-bold mb-0.5">{t.widok}</div>
+              <div className="text-xs truncate" title={assignment?.widok?.name}>
+                {assignment?.widok?.name || '-'}
+              </div>
             </div>
-          </div>
+          )}
+          {isTuesday && selectedLocation === 'bagiety' && (
+            <div className="text-center text-gray-500 text-xs py-2">
+              {t.tuesdaysOnlyWidok}
+            </div>
+          )}
         </div>
       );
       dayClassName = 'bg-gray-50 border-gray-200';
@@ -299,6 +346,39 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
       <h3 className="text-lg font-semibold text-gray-800 mb-4">
         {t.schedule} - {t.months[month - 1]} {year}
       </h3>
+
+      <div className="flex justify-center gap-2 mb-4">
+        <button
+          onClick={() => setSelectedLocation('bagiety')}
+          className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+            selectedLocation === 'bagiety'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          🥖 {t.bagiety}
+        </button>
+        <button
+          onClick={() => setSelectedLocation('widok')}
+          className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+            selectedLocation === 'widok'
+              ? 'bg-green-600 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          🌅 {t.widok}
+        </button>
+        <button
+          onClick={() => setSelectedLocation('both')}
+          className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+            selectedLocation === 'both'
+              ? 'bg-purple-600 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          {t.bothLocations}
+        </button>
+      </div>
 
       <UnifiedCalendar
         year={year}
