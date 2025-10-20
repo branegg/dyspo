@@ -154,6 +154,11 @@ export interface Translations {
 
   // Schedule Location
   bothLocations: string;
+
+  // Assignment Statistics
+  assignedDays: string;
+  assignedHours: string;
+  hoursUnit: string;
 }
 
 export const translations: Record<string, Translations> = {
@@ -315,7 +320,12 @@ export const translations: Record<string, Translations> = {
     availableEmployees: 'Dostępni pracownicy',
 
     // Schedule Location
-    bothLocations: 'Oba'
+    bothLocations: 'Oba',
+
+    // Assignment Statistics
+    assignedDays: 'Przydzielone dni',
+    assignedHours: 'Godziny',
+    hoursUnit: 'godz.'
   },
 
   en: {
@@ -476,6 +486,11 @@ export const translations: Record<string, Translations> = {
     availableEmployees: 'Available employees',
 
     // Schedule Location
-    bothLocations: 'Both'
+    bothLocations: 'Both',
+
+    // Assignment Statistics
+    assignedDays: 'Assigned Days',
+    assignedHours: 'Hours',
+    hoursUnit: 'hrs'
   }
 };

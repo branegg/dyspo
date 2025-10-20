@@ -228,6 +228,27 @@ export default function AdminDashboard() {
     }
   };
 
+  const getEmployeeAssignmentStats = (employeeId: string) => {
+    if (!schedule || !schedule.assignments) {
+      return { days: 0, hours: 0 };
+    }
+
+    let days = 0;
+    schedule.assignments.forEach((assignment: any) => {
+      if (assignment.bagiety?.userId === employeeId) {
+        days++;
+      }
+      if (assignment.widok?.userId === employeeId) {
+        days++;
+      }
+    });
+
+    return {
+      days,
+      hours: days * 10
+    };
+  };
+
   const updateDayAssignment = (day: number, bagiety: string | null, widok: string | null) => {
     // Validation: same person can't be on both locations
     if (bagiety && widok && bagiety === widok) {
@@ -654,7 +675,12 @@ export default function AdminDashboard() {
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6 mt-6">
-          <h3 className="text-xl font-bold mb-4">Lista Pracowników ({employees.length})</h3>
+          <div className="mb-4">
+            <h3 className="text-xl font-bold">Lista Pracowników ({employees.length})</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              {t.assignedDays} / {t.assignedHours} dla: {t.months[currentDate.getMonth()]} {currentDate.getFullYear()}
+            </p>
+          </div>
           {employees.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               Brak zarejestrowanych pracowników
@@ -674,40 +700,63 @@ export default function AdminDashboard() {
                       {t.registrationDate}
                     </th>
                     <th className="border p-3 bg-gray-50 text-center font-semibold">
+                      {t.assignedDays}
+                    </th>
+                    <th className="border p-3 bg-gray-50 text-center font-semibold">
+                      {t.assignedHours}
+                    </th>
+                    <th className="border p-3 bg-gray-50 text-center font-semibold">
                       {t.actions}
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {employees.map((employee) => (
-                    <tr key={employee._id} className="hover:bg-gray-50">
-                      <td className="border p-3 font-medium">
-                        {employee.name}
-                      </td>
-                      <td className="border p-3 text-gray-600">
-                        {employee.email}
-                      </td>
-                      <td className="border p-3 text-center text-gray-600">
-                        {new Date(employee.createdAt).toLocaleDateString('pl-PL')}
-                      </td>
-                      <td className="border p-3 text-center">
-                        <div className="flex gap-2 justify-center">
-                          <button
-                            onClick={() => handleEditEmployee(employee)}
-                            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
-                          >
-                            {t.edit}
-                          </button>
-                          <button
-                            onClick={() => handleDeleteEmployee(employee)}
-                            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm"
-                          >
-                            {t.delete}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {employees.map((employee) => {
+                    const stats = getEmployeeAssignmentStats(employee._id);
+                    return (
+                      <tr key={employee._id} className="hover:bg-gray-50">
+                        <td className="border p-3 font-medium">
+                          {employee.name}
+                        </td>
+                        <td className="border p-3 text-gray-600">
+                          {employee.email}
+                        </td>
+                        <td className="border p-3 text-center text-gray-600">
+                          {new Date(employee.createdAt).toLocaleDateString('pl-PL')}
+                        </td>
+                        <td className="border p-3 text-center">
+                          <span className={`inline-block px-3 py-1 rounded font-semibold ${
+                            stats.days > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {stats.days}
+                          </span>
+                        </td>
+                        <td className="border p-3 text-center">
+                          <span className={`inline-block px-3 py-1 rounded font-semibold ${
+                            stats.hours > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {stats.hours} {t.hoursUnit}
+                          </span>
+                        </td>
+                        <td className="border p-3 text-center">
+                          <div className="flex gap-2 justify-center">
+                            <button
+                              onClick={() => handleEditEmployee(employee)}
+                              className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
+                            >
+                              {t.edit}
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEmployee(employee)}
+                              className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm"
+                            >
+                              {t.delete}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
