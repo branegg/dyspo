@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (decoded.role !== 'employee') {
+    if (decoded.role !== 'employee' && decoded.role !== 'admin') {
       return NextResponse.json(
         { error: 'Brak uprawnień' },
         { status: 403 }
