@@ -712,7 +712,7 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody>
                   {employees.map((employee) => {
-                    const stats = getEmployeeAssignmentStats(employee._id);
+                    const stats = getEmployeeAssignmentStats(employee._id || '');
                     return (
                       <tr key={employee._id} className="hover:bg-gray-50">
                         <td className="border p-3 font-medium">
