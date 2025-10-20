@@ -181,6 +181,10 @@ export interface Translations {
   locked: string;
   unlocked: string;
   availabilitySavedAndLocked: string;
+
+  // Color legend
+  colorLegend: string;
+  you: string;
 }
 
 export const translations: Record<string, Translations> = {
@@ -369,7 +373,11 @@ export const translations: Record<string, Translations> = {
     cannotEditLocked: 'Nie można edytować zablokowanej dyspozycyjności',
     locked: 'Zablokowana',
     unlocked: 'Odblokowana',
-    availabilitySavedAndLocked: 'Dyspozycyjność została zapisana i zablokowana!'
+    availabilitySavedAndLocked: 'Dyspozycyjność została zapisana i zablokowana!',
+
+    // Color legend
+    colorLegend: 'Legenda kolorów',
+    you: 'Ty'
   },
 
   en: {
@@ -557,6 +565,10 @@ export const translations: Record<string, Translations> = {
     cannotEditLocked: 'Cannot edit locked availability',
     locked: 'Locked',
     unlocked: 'Unlocked',
-    availabilitySavedAndLocked: 'Availability has been saved and locked!'
+    availabilitySavedAndLocked: 'Availability has been saved and locked!',
+
+    // Color legend
+    colorLegend: 'Color Legend',
+    you: 'You'
   }
 };

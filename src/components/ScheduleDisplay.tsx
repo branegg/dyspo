@@ -130,6 +130,58 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
     return locations;
   };
 
+  // Color palette for employees (distinct, accessible colors)
+  const employeeColors = [
+    { bg: 'bg-blue-200', border: 'border-blue-500', text: 'text-blue-900', name: 'blue' },
+    { bg: 'bg-purple-200', border: 'border-purple-500', text: 'text-purple-900', name: 'purple' },
+    { bg: 'bg-pink-200', border: 'border-pink-500', text: 'text-pink-900', name: 'pink' },
+    { bg: 'bg-indigo-200', border: 'border-indigo-500', text: 'text-indigo-900', name: 'indigo' },
+    { bg: 'bg-cyan-200', border: 'border-cyan-500', text: 'text-cyan-900', name: 'cyan' },
+    { bg: 'bg-teal-200', border: 'border-teal-500', text: 'text-teal-900', name: 'teal' },
+    { bg: 'bg-orange-200', border: 'border-orange-500', text: 'text-orange-900', name: 'orange' },
+    { bg: 'bg-amber-200', border: 'border-amber-500', text: 'text-amber-900', name: 'amber' },
+  ];
+
+  // Assign color to employee based on their userId
+  const getEmployeeColor = (employeeUserId: string) => {
+    if (!employeeUserId) return employeeColors[0];
+
+    // Simple hash function to get consistent color for same user
+    let hash = 0;
+    for (let i = 0; i < employeeUserId.length; i++) {
+      hash = employeeUserId.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % employeeColors.length;
+    return employeeColors[index];
+  };
+
+  // Get unique employees from schedule (excluding current user)
+  const getUniqueEmployees = () => {
+    if (!schedule) return [];
+    const employeeMap = new Map<string, { userId: string; name: string; color: any }>();
+
+    schedule.assignments.forEach((assignment: any) => {
+      if (assignment.bagiety && assignment.bagiety.userId !== userId) {
+        const color = getEmployeeColor(assignment.bagiety.userId);
+        employeeMap.set(assignment.bagiety.userId, {
+          userId: assignment.bagiety.userId,
+          name: assignment.bagiety.name,
+          color
+        });
+      }
+      if (assignment.widok && assignment.widok.userId !== userId) {
+        const color = getEmployeeColor(assignment.widok.userId);
+        employeeMap.set(assignment.widok.userId, {
+          userId: assignment.widok.userId,
+          name: assignment.widok.name,
+          color
+        });
+      }
+    });
+
+    return Array.from(employeeMap.values());
+  };
+
   const getDayBackgroundColor = (assignment: any, isTuesday: boolean, location: 'bagiety' | 'widok' | 'both') => {
     const hasBagiety = assignment?.bagiety;
     const hasWidok = assignment?.widok;
@@ -242,15 +294,21 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
       // If myScheduleOnly and no assignment for this user, show empty
       const hasUserAssignment = assignment?.bagiety?.userId === userId || assignment?.widok?.userId === userId;
 
+      // Get employee-specific colors for full schedule view
+      const bagietyColor = assignment?.bagiety ? getEmployeeColor(assignment.bagiety.userId) : null;
+      const widokColor = assignment?.widok ? getEmployeeColor(assignment.widok.userId) : null;
+
       content = (
         <div className="space-y-1 sm:space-y-1.5 w-full">
           {shouldShowBagiety && (
-            <div className={`rounded px-1 sm:px-1.5 py-0.5 sm:py-1 text-center ${
+            <div className={`rounded px-1 sm:px-1.5 py-0.5 sm:py-1 text-center border-2 ${
               isUserAssigned && assignment?.bagiety?.userId === userId
-                ? 'bg-green-500 text-white font-semibold'
+                ? 'bg-green-500 text-white font-semibold border-green-600'
                 : myScheduleOnly
-                ? 'bg-gray-100 text-gray-400 border border-gray-200'
-                : 'bg-blue-100 border border-blue-300'
+                ? 'bg-gray-100 text-gray-400 border-gray-200'
+                : bagietyColor
+                ? `${bagietyColor.bg} ${bagietyColor.border} ${bagietyColor.text}`
+                : 'bg-gray-100 border-gray-300'
             }`}>
               <div className="text-[9px] sm:text-[10px] font-bold mb-0.5">{t.bagiety}</div>
               <div className="text-[11px] sm:text-xs truncate" title={assignment?.bagiety?.name}>
@@ -259,12 +317,14 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
             </div>
           )}
           {shouldShowWidok && (
-            <div className={`rounded px-1 sm:px-1.5 py-0.5 sm:py-1 text-center ${
+            <div className={`rounded px-1 sm:px-1.5 py-0.5 sm:py-1 text-center border-2 ${
               isUserAssigned && assignment?.widok?.userId === userId
-                ? 'bg-green-500 text-white font-semibold'
+                ? 'bg-green-500 text-white font-semibold border-green-600'
                 : myScheduleOnly
-                ? 'bg-gray-100 text-gray-400 border border-gray-200'
-                : 'bg-purple-100 border border-purple-300'
+                ? 'bg-gray-100 text-gray-400 border-gray-200'
+                : widokColor
+                ? `${widokColor.bg} ${widokColor.border} ${widokColor.text}`
+                : 'bg-gray-100 border-gray-300'
             }`}>
               <div className="text-[9px] sm:text-[10px] font-bold mb-0.5">{t.widok}</div>
               <div className="text-[11px] sm:text-xs truncate" title={assignment?.widok?.name}>
@@ -533,23 +593,32 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
           )}
 
           {userRole === 'employee' && (
-            <div className="mt-4 text-xs sm:text-sm">
-              <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
-                <div className="flex items-center gap-2">
-                  <div className="bg-green-500 text-white px-2 py-1 rounded font-semibold text-xs sm:text-sm">
-                    {t.yourShifts}
+            <div className="mt-4">
+              {!myScheduleOnly && (
+                <>
+                  <div className="text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                    {t.colorLegend || 'Color Legend'}:
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="bg-blue-100 border border-blue-300 px-2 py-1 rounded text-xs sm:text-sm">
-                    {t.bagiety}
+                  <div className="flex flex-wrap gap-2 sm:gap-3 items-center mb-3">
+                    {/* Current user */}
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-500 border-2 border-green-600 rounded"></div>
+                      <span className="text-xs sm:text-sm font-semibold">{t.you || 'You'}</span>
+                    </div>
+                    {/* Other employees */}
+                    {getUniqueEmployees().map((emp) => (
+                      <div key={emp.userId} className="flex items-center gap-2">
+                        <div className={`w-6 h-6 sm:w-8 sm:h-8 ${emp.color.bg} border-2 ${emp.color.border} rounded`}></div>
+                        <span className="text-xs sm:text-sm">{emp.name}</span>
+                      </div>
+                    ))}
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="bg-purple-100 border border-purple-300 px-2 py-1 rounded text-xs sm:text-sm">
-                    {t.widok}
-                  </div>
-                </div>
+                </>
+              )}
+              <div className="flex flex-wrap gap-2 sm:gap-3 items-center text-xs sm:text-sm text-gray-600">
+                <span>🥖 {t.bagiety}</span>
+                <span>•</span>
+                <span>🌅 {t.widok}</span>
               </div>
             </div>
           )}
