@@ -23,6 +23,7 @@ export default function EmployeeDashboard() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
   const [viewingEmployee, setViewingEmployee] = useState<any>(null);
+  const [isLocked, setIsLocked] = useState(false);
   const router = useRouter();
   const { t } = useLanguage();
 
@@ -109,8 +110,11 @@ export default function EmployeeDashboard() {
       const data = await response.json();
       if (data.availability) {
         setSelectedDays(data.availability.availableDays || []);
+        // Check lock status - default to true if field doesn't exist (for existing records)
+        setIsLocked(data.availability.isLocked !== undefined ? data.availability.isLocked : true);
       } else {
         setSelectedDays([]);
+        setIsLocked(false); // New availability can be edited
       }
     } catch (error) {
       console.error('Error loading availability:', error);
@@ -193,7 +197,8 @@ export default function EmployeeDashboard() {
 
       const data = await response.json();
       if (response.ok) {
-        setMessage(t.availabilitySaved);
+        setMessage(t.availabilitySavedAndLocked);
+        setIsLocked(true); // Lock after saving
       } else {
         setMessage(data.error || t.saveError);
       }
@@ -220,6 +225,38 @@ export default function EmployeeDashboard() {
   const handleEmployeeChange = (employeeId: string) => {
     setSelectedEmployeeId(employeeId);
     setLoading(true);
+  };
+
+  const handleAdminUnlock = async () => {
+    if (!selectedEmployeeId) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+
+      const response = await fetch('/api/admin/availability/unlock', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId: selectedEmployeeId, year, month }),
+      });
+
+      if (response.ok) {
+        setMessage(t.unlockSuccess);
+        setIsLocked(false);
+        // Reload availability
+        if (token) {
+          loadAvailability(token, selectedEmployeeId);
+        }
+      } else {
+        setMessage(t.unlockError);
+      }
+    } catch (error) {
+      setMessage(t.unlockError);
+    }
   };
 
   const handleLogout = () => {
@@ -285,20 +322,37 @@ export default function EmployeeDashboard() {
         {/* Admin: Employee Selector */}
         {user?.role === 'admin' && employees.length > 0 && (
           <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {t.selectEmployee}
-            </label>
-            <select
-              value={selectedEmployeeId || ''}
-              onChange={(e) => handleEmployeeChange(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {employees.map((emp) => (
-                <option key={emp._id} value={emp._id.toString()}>
-                  {emp.name} ({emp.email})
-                </option>
-              ))}
-            </select>
+            <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
+              <div className="flex-1 w-full">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  {t.selectEmployee}
+                </label>
+                <select
+                  value={selectedEmployeeId || ''}
+                  onChange={(e) => handleEmployeeChange(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {employees.map((emp) => (
+                    <option key={emp._id} value={emp._id.toString()}>
+                      {emp.name} ({emp.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {isLocked && (
+                <button
+                  onClick={handleAdminUnlock}
+                  className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 text-sm whitespace-nowrap w-full sm:w-auto"
+                >
+                  🔓 {t.unlockAvailability}
+                </button>
+              )}
+            </div>
+            {isLocked && (
+              <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+                <span className="font-semibold">🔒 {t.locked}</span> - {t.availabilityLockedMessage}
+              </div>
+            )}
           </div>
         )}
 
@@ -397,7 +451,7 @@ export default function EmployeeDashboard() {
               year={currentDate.getFullYear()}
               month={currentDate.getMonth() + 1}
               selectedDays={selectedDays}
-              onDayToggle={user?.role === 'admin' ? () => {} : handleDayToggle}
+              onDayToggle={user?.role === 'admin' || isLocked ? () => {} : handleDayToggle}
             />
 
             <div className="mt-4 sm:mt-6 text-center">
@@ -407,17 +461,33 @@ export default function EmployeeDashboard() {
 
               {user?.role !== 'admin' && (
                 <>
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="bg-green-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm sm:text-base w-full sm:w-auto"
-                  >
-                    {saving ? t.saving : t.saveAvailability}
-                  </button>
+                  {isLocked && (
+                    <div className="mb-4 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
+                      <div className="flex items-center justify-center gap-2 text-yellow-800 font-semibold mb-2">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                        </svg>
+                        {t.availabilityLocked}
+                      </div>
+                      <p className="text-sm text-yellow-700">
+                        {t.availabilityLockedMessage}
+                      </p>
+                    </div>
+                  )}
+
+                  {!isLocked && (
+                    <button
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="bg-green-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm sm:text-base w-full sm:w-auto"
+                    >
+                      {saving ? t.saving : t.saveAvailability}
+                    </button>
+                  )}
 
                   {message && (
                     <div className={`mt-4 p-3 rounded text-sm sm:text-base ${
-                      message.includes(t.availabilitySaved) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      message.includes(t.availabilitySavedAndLocked) || message.includes(t.availabilitySaved) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                     }`}>
                       {message}
                     </div>

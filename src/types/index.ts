@@ -13,6 +13,7 @@ export interface Availability {
   year: number;
   month: number;
   availableDays: number[];
+  isLocked: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -58,6 +58,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Nieprawidłowy token' }, { status: 401 });
     }
 
+    // Only employees can save their own availability (not admins)
+    if (decoded.role !== 'employee') {
+      return NextResponse.json({ error: 'Tylko pracownicy mogą zapisywać swoją dyspozycyjność' }, { status: 403 });
+    }
+
     const { year, month, availableDays } = await request.json();
 
     if (!year || !month || !Array.isArray(availableDays)) {
@@ -75,11 +80,20 @@ export async function POST(request: NextRequest) {
       month,
     });
 
+    // Check if availability is locked
+    if (existingAvailability && existingAvailability.isLocked) {
+      return NextResponse.json(
+        { error: 'Dyspozycyjność na ten miesiąc jest zablokowana. Skontaktuj się z administratorem.' },
+        { status: 403 }
+      );
+    }
+
     const availabilityData = {
       userId: decoded.userId,
       year,
       month,
       availableDays,
+      isLocked: true, // Lock after saving
       updatedAt: new Date(),
     };
 
@@ -95,7 +109,7 @@ export async function POST(request: NextRequest) {
       } as Availability);
     }
 
-    return NextResponse.json({ message: 'Dyspozycyjność została zapisana' });
+    return NextResponse.json({ message: 'Dyspozycyjność została zapisana i zablokowana' });
   } catch (error) {
     console.error('Save availability error:', error);
     return NextResponse.json({ error: 'Błąd serwera' }, { status: 500 });

@@ -320,6 +320,35 @@ export default function AdminDashboard() {
     router.push('/');
   };
 
+  const handleUnlockAvailability = async (userId: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+
+      const response = await fetch('/api/admin/availability/unlock', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId, year, month }),
+      });
+
+      if (response.ok) {
+        alert(t.unlockSuccess);
+        // Reload availability data
+        if (token) {
+          loadAvailability(token);
+        }
+      } else {
+        alert(t.unlockError);
+      }
+    } catch (error) {
+      alert(t.unlockError);
+    }
+  };
+
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const allDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
@@ -422,21 +451,47 @@ export default function AdminDashboard() {
                       Email
                     </th>
                     <th className="border p-3 bg-gray-50 text-center font-semibold">
+                      Status
+                    </th>
+                    <th className="border p-3 bg-gray-50 text-center font-semibold">
                       Dostępne dni
                     </th>
                     <th className="border p-3 bg-gray-50 text-center font-semibold">
                       Liczba dni
                     </th>
+                    <th className="border p-3 bg-gray-50 text-center font-semibold">
+                      Akcja
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {availability.map((item, index) => (
+                  {availability.map((item, index) => {
+                    // Default to locked if field doesn't exist (for existing records)
+                    const isLocked = item.isLocked !== undefined ? item.isLocked : true;
+                    return (
                     <tr key={index} className="hover:bg-gray-50">
                       <td className="border p-3 font-medium">
                         {item.user.name}
                       </td>
                       <td className="border p-3 text-gray-600">
                         {item.user.email}
+                      </td>
+                      <td className="border p-3 text-center">
+                        {isLocked ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm font-medium">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                            </svg>
+                            {t.locked}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 rounded text-sm font-medium">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z" />
+                            </svg>
+                            {t.unlocked}
+                          </span>
+                        )}
                       </td>
                       <td className="border p-3 text-center">
                         <div className="flex flex-wrap gap-1 justify-center">
@@ -457,8 +512,19 @@ export default function AdminDashboard() {
                       <td className="border p-3 text-center font-semibold">
                         {item.availableDays.length}
                       </td>
+                      <td className="border p-3 text-center">
+                        {isLocked && (
+                          <button
+                            onClick={() => handleUnlockAvailability(item.userId)}
+                            className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 text-sm"
+                          >
+                            {t.unlockAvailability}
+                          </button>
+                        )}
+                      </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -713,6 +779,11 @@ export default function AdminDashboard() {
                 <tbody>
                   {employees.map((employee) => {
                     const stats = getEmployeeAssignmentStats(employee._id || '');
+                    // Check if employee has availability for current month
+                    const employeeAvailability = availability.find(a => a.userId === employee._id);
+                    const hasAvailability = !!employeeAvailability;
+                    const isLocked = employeeAvailability?.isLocked !== undefined ? employeeAvailability.isLocked : true;
+
                     return (
                       <tr key={employee._id} className="hover:bg-gray-50">
                         <td className="border p-3 font-medium">
@@ -739,7 +810,16 @@ export default function AdminDashboard() {
                           </span>
                         </td>
                         <td className="border p-3 text-center">
-                          <div className="flex gap-2 justify-center">
+                          <div className="flex gap-2 justify-center flex-wrap">
+                            {hasAvailability && isLocked && (
+                              <button
+                                onClick={() => handleUnlockAvailability(employee._id || '')}
+                                className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 text-sm whitespace-nowrap"
+                                title={t.unlockAvailability}
+                              >
+                                🔓 Odblokuj
+                              </button>
+                            )}
                             <button
                               onClick={() => handleEditEmployee(employee)}
                               className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"

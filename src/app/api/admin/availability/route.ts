@@ -50,6 +50,7 @@ export async function GET(request: NextRequest) {
           year: 1,
           month: 1,
           availableDays: 1,
+          isLocked: 1,
           createdAt: 1,
           updatedAt: 1,
           'user.name': 1,

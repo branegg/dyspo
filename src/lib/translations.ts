@@ -164,6 +164,17 @@ export interface Translations {
   viewAsEmployee: string;
   selectEmployee: string;
   viewingAs: string;
+
+  // Availability locking
+  availabilityLocked: string;
+  availabilityLockedMessage: string;
+  unlockAvailability: string;
+  unlockSuccess: string;
+  unlockError: string;
+  cannotEditLocked: string;
+  locked: string;
+  unlocked: string;
+  availabilitySavedAndLocked: string;
 }
 
 export const translations: Record<string, Translations> = {
@@ -335,7 +346,18 @@ export const translations: Record<string, Translations> = {
     // View as employee (admin feature)
     viewAsEmployee: 'Wyświetl jako pracownik',
     selectEmployee: 'Wybierz pracownika',
-    viewingAs: 'Wyświetlasz jako'
+    viewingAs: 'Wyświetlasz jako',
+
+    // Availability locking
+    availabilityLocked: 'Dyspozycyjność zablokowana',
+    availabilityLockedMessage: 'Twoja dyspozycyjność na ten miesiąc jest zablokowana. Skontaktuj się z administratorem, aby wprowadzić zmiany.',
+    unlockAvailability: 'Odblokuj dyspozycyjność',
+    unlockSuccess: 'Dyspozycyjność została odblokowana',
+    unlockError: 'Błąd podczas odblokowywania dyspozycyjności',
+    cannotEditLocked: 'Nie można edytować zablokowanej dyspozycyjności',
+    locked: 'Zablokowana',
+    unlocked: 'Odblokowana',
+    availabilitySavedAndLocked: 'Dyspozycyjność została zapisana i zablokowana!'
   },
 
   en: {
@@ -506,6 +528,17 @@ export const translations: Record<string, Translations> = {
     // View as employee (admin feature)
     viewAsEmployee: 'View as employee',
     selectEmployee: 'Select employee',
-    viewingAs: 'Viewing as'
+    viewingAs: 'Viewing as',
+
+    // Availability locking
+    availabilityLocked: 'Availability locked',
+    availabilityLockedMessage: 'Your availability for this month is locked. Contact admin to make changes.',
+    unlockAvailability: 'Unlock Availability',
+    unlockSuccess: 'Availability unlocked successfully',
+    unlockError: 'Error unlocking availability',
+    cannotEditLocked: 'Cannot edit locked availability',
+    locked: 'Locked',
+    unlocked: 'Unlocked',
+    availabilitySavedAndLocked: 'Availability has been saved and locked!'
   }
 };
