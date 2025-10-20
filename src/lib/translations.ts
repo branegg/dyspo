@@ -151,6 +151,9 @@ export interface Translations {
   calendarView: string;
   viewMode: string;
   availableEmployees: string;
+
+  // Schedule Location
+  bothLocations: string;
 }
 
 export const translations: Record<string, Translations> = {
@@ -309,7 +312,10 @@ export const translations: Record<string, Translations> = {
     tableView: 'Tabela',
     calendarView: 'Kalendarz',
     viewMode: 'Tryb widoku',
-    availableEmployees: 'Dostępni pracownicy'
+    availableEmployees: 'Dostępni pracownicy',
+
+    // Schedule Location
+    bothLocations: 'Oba'
   },
 
   en: {
@@ -467,6 +473,9 @@ export const translations: Record<string, Translations> = {
     tableView: 'Table View',
     calendarView: 'Calendar View',
     viewMode: 'View Mode',
-    availableEmployees: 'Available employees'
+    availableEmployees: 'Available employees',
+
+    // Schedule Location
+    bothLocations: 'Both'
   }
 };

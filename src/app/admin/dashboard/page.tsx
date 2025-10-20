@@ -21,6 +21,7 @@ export default function AdminDashboard() {
   const [selectedEmployee, setSelectedEmployee] = useState<User | null>(null);
   const [selectedAssignments, setSelectedAssignments] = useState<{[key: number]: DayAssignment}>({});
   const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
+  const [scheduleLocation, setScheduleLocation] = useState<'bagiety' | 'widok' | 'both'>('both');
   const router = useRouter();
   const { t } = useLanguage();
 
@@ -485,8 +486,42 @@ export default function AdminDashboard() {
               Zapisz Grafik
             </button>
           </div>
+
+          <div className="flex justify-center gap-2 mb-4">
+            <button
+              onClick={() => setScheduleLocation('bagiety')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                scheduleLocation === 'bagiety'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              🥖 {t.bagiety}
+            </button>
+            <button
+              onClick={() => setScheduleLocation('widok')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                scheduleLocation === 'widok'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              🌅 {t.widok}
+            </button>
+            <button
+              onClick={() => setScheduleLocation('both')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                scheduleLocation === 'both'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {t.bothLocations}
+            </button>
+          </div>
+
           <div className="grid grid-cols-7 gap-2 mb-4">
-            {['Pon', 'Wto', 'Śro', 'Czw', 'Pią', 'Sob', 'Nie'].map(day => (
+            {t.dayNames.map(day => (
               <div key={day} className="text-center font-semibold text-gray-600 py-2">
                 {day}
               </div>
@@ -522,7 +557,7 @@ export default function AdminDashboard() {
 
                     {availableCount > 0 ? (
                       <>
-                        {!isTuesday && (
+                        {!isTuesday && (scheduleLocation === 'bagiety' || scheduleLocation === 'both') && (
                           <div>
                             <label className="block text-xs font-medium text-blue-600 mb-1">🥖 Bagiety</label>
                             <select
@@ -541,22 +576,30 @@ export default function AdminDashboard() {
                           </div>
                         )}
 
-                        <div>
-                          <label className="block text-xs font-medium text-green-600 mb-1">🌅 Widok</label>
-                          <select
-                            value={assignment?.widok || ''}
-                            onChange={(e) => updateDayAssignment(day, assignment?.bagiety || null, e.target.value || null)}
-                            className="w-full px-1 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <option value="">--</option>
-                            {availableEmployees.map((emp) => (
-                              <option key={emp.userId} value={emp.userId}>
-                                {emp.user.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                        {(scheduleLocation === 'widok' || scheduleLocation === 'both') && (
+                          <div>
+                            <label className="block text-xs font-medium text-green-600 mb-1">🌅 Widok</label>
+                            <select
+                              value={assignment?.widok || ''}
+                              onChange={(e) => updateDayAssignment(day, assignment?.bagiety || null, e.target.value || null)}
+                              className="w-full px-1 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <option value="">--</option>
+                              {availableEmployees.map((emp) => (
+                                <option key={emp.userId} value={emp.userId}>
+                                  {emp.user.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+
+                        {isTuesday && scheduleLocation === 'bagiety' && (
+                          <div className="text-center text-gray-500 text-xs py-2">
+                            Wtorek - brak Bagiety
+                          </div>
+                        )}
                       </>
                     ) : (
                       <div className="text-center text-gray-400 text-xs py-2">
@@ -568,13 +611,20 @@ export default function AdminDashboard() {
               );
             })}
           </div>
-          <div className="mt-4 text-xs text-gray-600">
-            <div className="flex flex-wrap justify-center gap-4">
-              <span><strong>🥖 Bagiety</strong></span>
-              <span><strong>🌅 Widok</strong></span>
-              <span className="text-orange-600">Wtorki: tylko Widok</span>
+          {scheduleLocation === 'both' && (
+            <div className="mt-4 text-xs text-gray-600">
+              <div className="flex flex-wrap justify-center gap-4">
+                <span><strong>🥖 Bagiety</strong></span>
+                <span><strong>🌅 Widok</strong></span>
+                <span className="text-orange-600">{t.tuesdaysOnlyWidok}</span>
+              </div>
             </div>
-          </div>
+          )}
+          {scheduleLocation === 'bagiety' && (
+            <div className="mt-4 text-xs text-gray-600 text-center">
+              <span className="text-orange-600">{t.tuesdaysOnlyWidok}</span>
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6 mt-6">
