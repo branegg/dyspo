@@ -307,14 +307,46 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
     return shifts.sort((a, b) => a.day - b.day);
   };
 
+  // Helper function to get all assignments for list view (full schedule)
+  const getAllAssignments = () => {
+    if (!schedule) return [];
+
+    const assignments: Array<{
+      day: number;
+      dayOfWeek: number;
+      bagiety: { userId: string; name: string; email: string } | null;
+      widok: { userId: string; name: string; email: string } | null;
+    }> = [];
+
+    const daysInMonth = getDaysInMonth(year, month);
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const assignment = getAssignmentForDay(day);
+      const dayOfWeek = getDayOfWeek(year, month, day);
+      const isTuesday = dayOfWeek === 1;
+
+      // Only include days that have at least one assignment
+      if (assignment && (assignment.bagiety || assignment.widok)) {
+        assignments.push({
+          day,
+          dayOfWeek,
+          bagiety: !isTuesday && assignment.bagiety ? assignment.bagiety : null,
+          widok: assignment.widok || null
+        });
+      }
+    }
+
+    return assignments;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow p-3 sm:p-6">
       <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
         {myScheduleOnly ? t.mySchedule : t.schedule} - {t.months[month - 1]} {year}
       </h3>
 
-      {/* View Mode Toggle for employees with myScheduleOnly */}
-      {userRole === 'employee' && myScheduleOnly && (
+      {/* View Mode Toggle for employees */}
+      {userRole === 'employee' && (
         <div className="flex justify-center gap-2 mb-4">
           <button
             onClick={() => setViewMode('calendar')}
@@ -375,40 +407,106 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
         </div>
       )}
 
-      {/* List View for My Schedule (mobile-friendly) */}
-      {viewMode === 'list' && myScheduleOnly && userRole === 'employee' ? (
+      {/* List View (mobile-friendly) */}
+      {viewMode === 'list' && userRole === 'employee' ? (
         <div className="space-y-2">
-          {getUserShifts().length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              {t.noShiftsAssigned}
-            </div>
-          ) : (
-            getUserShifts().map((shift, index) => (
-              <div
-                key={index}
-                className="bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500 p-4 rounded-lg shadow-sm"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-green-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">
-                      {shift.day}
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-800 text-base">
-                        {t.dayNames[shift.dayOfWeek]}
+          {myScheduleOnly ? (
+            // My Schedule List View - only user's shifts
+            getUserShifts().length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                {t.noShiftsAssigned}
+              </div>
+            ) : (
+              getUserShifts().map((shift, index) => (
+                <div
+                  key={index}
+                  className="bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500 p-4 rounded-lg shadow-sm"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-green-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">
+                        {shift.day}
                       </div>
-                      <div className="text-sm text-gray-600">
-                        {t.months[month - 1]} {shift.day}, {year}
+                      <div>
+                        <div className="font-semibold text-gray-800 text-base">
+                          {t.dayNames[shift.dayOfWeek]}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {t.months[month - 1]} {shift.day}, {year}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="bg-white px-4 py-2 rounded-lg shadow-sm border-2 border-green-500">
-                    <div className="text-xs text-gray-500 font-medium">{t.location}</div>
-                    <div className="font-bold text-green-700 text-base">{shift.location}</div>
+                    <div className="bg-white px-4 py-2 rounded-lg shadow-sm border-2 border-green-500">
+                      <div className="text-xs text-gray-500 font-medium">{t.location}</div>
+                      <div className="font-bold text-green-700 text-base">{shift.location}</div>
+                    </div>
                   </div>
                 </div>
+              ))
+            )
+          ) : (
+            // Full Schedule List View - all assignments
+            getAllAssignments().length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                {t.noScheduleYet}
               </div>
-            ))
+            ) : (
+              getAllAssignments().map((assignment, index) => {
+                const isUserAssigned = userId && (
+                  assignment.bagiety?.userId === userId ||
+                  assignment.widok?.userId === userId
+                );
+
+                return (
+                  <div
+                    key={index}
+                    className={`${
+                      isUserAssigned
+                        ? 'bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500'
+                        : 'bg-gradient-to-r from-gray-50 to-gray-100 border-l-4 border-gray-300'
+                    } p-4 rounded-lg shadow-sm`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`${
+                        isUserAssigned ? 'bg-green-500' : 'bg-gray-400'
+                      } text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg flex-shrink-0`}>
+                        {assignment.day}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-gray-800 text-base mb-1">
+                          {t.dayNames[assignment.dayOfWeek]}
+                        </div>
+                        <div className="text-sm text-gray-600 mb-2">
+                          {t.months[month - 1]} {assignment.day}, {year}
+                        </div>
+                        <div className="space-y-2">
+                          {assignment.bagiety && (
+                            <div className={`flex items-center gap-2 p-2 rounded ${
+                              assignment.bagiety.userId === userId
+                                ? 'bg-green-500 text-white font-semibold'
+                                : 'bg-blue-100 border border-blue-300'
+                            }`}>
+                              <span className="text-xs font-bold">🥖 {t.bagiety}:</span>
+                              <span className="text-sm truncate">{assignment.bagiety.name}</span>
+                            </div>
+                          )}
+                          {assignment.widok && (
+                            <div className={`flex items-center gap-2 p-2 rounded ${
+                              assignment.widok.userId === userId
+                                ? 'bg-green-500 text-white font-semibold'
+                                : 'bg-purple-100 border border-purple-300'
+                            }`}>
+                              <span className="text-xs font-bold">🌅 {t.widok}:</span>
+                              <span className="text-sm truncate">{assignment.widok.name}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )
           )}
         </div>
       ) : (
