@@ -200,6 +200,34 @@ export default function AdminDashboard() {
     return employeeColors[employeeIndex % employeeColors.length];
   };
 
+  const getDayBackgroundColor = (assignment: any, isTuesday: boolean, location: 'bagiety' | 'widok' | 'both') => {
+    const hasBagiety = assignment?.bagiety;
+    const hasWidok = assignment?.widok;
+
+    if (location === 'both') {
+      // For "both" view, check both locations (Tuesday has no bagiety)
+      const expectedAssignments = isTuesday ? 1 : 2; // Tuesday only expects Widok
+      const actualAssignments = (hasBagiety ? 1 : 0) + (hasWidok ? 1 : 0);
+
+      if (actualAssignments === 0) {
+        return 'bg-red-100 border-red-300'; // No assignments - RED
+      } else if (actualAssignments < expectedAssignments) {
+        return 'bg-yellow-100 border-yellow-300'; // Partial assignment - YELLOW
+      } else {
+        return 'bg-green-100 border-green-300'; // Full assignment - GREEN
+      }
+    } else if (location === 'bagiety') {
+      // For bagiety-only view
+      if (isTuesday) {
+        return 'bg-gray-100 border-gray-300'; // Tuesday - N/A
+      }
+      return hasBagiety ? 'bg-green-100 border-green-300' : 'bg-red-100 border-red-300';
+    } else {
+      // For widok-only view
+      return hasWidok ? 'bg-green-100 border-green-300' : 'bg-red-100 border-red-300';
+    }
+  };
+
   const updateDayAssignment = (day: number, bagiety: string | null, widok: string | null) => {
     // Validation: same person can't be on both locations
     if (bagiety && widok && bagiety === widok) {
@@ -541,14 +569,12 @@ export default function AdminDashboard() {
                 ? `Dostępni pracownicy:\n${availableEmployees.map(emp => emp.user.name).join('\n')}`
                 : 'Brak dostępnych pracowników';
 
+              const dayColor = getDayBackgroundColor(assignment, isTuesday, scheduleLocation);
+
               return (
                 <div
                   key={day}
-                  className={`border rounded p-2 text-xs ${
-                    availableCount > 0
-                      ? 'bg-blue-50 border-blue-300'
-                      : 'bg-gray-50 border-gray-200'
-                  }`}
+                  className={`border rounded p-2 text-xs ${dayColor}`}
                   style={{ gridColumn: day === 1 ? adjustedDay + 1 : undefined }}
                   title={tooltipText}
                 >

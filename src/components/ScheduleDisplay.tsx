@@ -127,6 +127,34 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
     return locations;
   };
 
+  const getDayBackgroundColor = (assignment: any, isTuesday: boolean, location: 'bagiety' | 'widok' | 'both') => {
+    const hasBagiety = assignment?.bagiety;
+    const hasWidok = assignment?.widok;
+
+    if (location === 'both') {
+      // For "both" view, check both locations (Tuesday has no bagiety)
+      const expectedAssignments = isTuesday ? 1 : 2; // Tuesday only expects Widok
+      const actualAssignments = (hasBagiety ? 1 : 0) + (hasWidok ? 1 : 0);
+
+      if (actualAssignments === 0) {
+        return 'bg-red-100 border-red-300'; // No assignments - RED
+      } else if (actualAssignments < expectedAssignments) {
+        return 'bg-yellow-100 border-yellow-300'; // Partial assignment - YELLOW
+      } else {
+        return 'bg-green-100 border-green-300'; // Full assignment - GREEN
+      }
+    } else if (location === 'bagiety') {
+      // For bagiety-only view
+      if (isTuesday) {
+        return 'bg-gray-100 border-gray-300'; // Tuesday - N/A
+      }
+      return hasBagiety ? 'bg-green-100 border-green-300' : 'bg-red-100 border-red-300';
+    } else {
+      // For widok-only view
+      return hasWidok ? 'bg-green-100 border-green-300' : 'bg-red-100 border-red-300';
+    }
+  };
+
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow p-6 flex items-center justify-center min-h-[300px]">
@@ -272,7 +300,8 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
     const isUserAssigned = isUserAssignedToDay(day);
 
     let content;
-    let dayClassName = 'border rounded';
+    const dayColor = getDayBackgroundColor(assignment, isTuesday, selectedLocation);
+    let dayClassName = `border rounded ${dayColor}`;
 
     if (userRole === 'admin') {
       // Admin view
@@ -294,7 +323,6 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
           </div>
         </div>
       );
-      dayClassName = assignment ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200';
     } else {
       // Employee view with location boxes
       content = (
@@ -330,7 +358,6 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
           )}
         </div>
       );
-      dayClassName = 'bg-gray-50 border-gray-200';
     }
 
     calendarDays.push({
