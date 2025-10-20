@@ -145,6 +145,12 @@ export interface Translations {
   availabilityReminderTitle: string;
   availabilityReminderMessage: string;
   setAvailabilityNow: string;
+
+  // View Mode
+  tableView: string;
+  calendarView: string;
+  viewMode: string;
+  availableEmployees: string;
 }
 
 export const translations: Record<string, Translations> = {
@@ -297,7 +303,13 @@ export const translations: Record<string, Translations> = {
     // Availability Reminder
     availabilityReminderTitle: 'Przypomnienie o dyspozycyjności',
     availabilityReminderMessage: 'Nie dodałeś jeszcze swojej dyspozycyjności na następny miesiąc. Prosimy o uzupełnienie jak najszybciej.',
-    setAvailabilityNow: 'Ustaw dyspozycyjność teraz'
+    setAvailabilityNow: 'Ustaw dyspozycyjność teraz',
+
+    // View Mode
+    tableView: 'Tabela',
+    calendarView: 'Kalendarz',
+    viewMode: 'Tryb widoku',
+    availableEmployees: 'Dostępni pracownicy'
   },
 
   en: {
@@ -449,6 +461,12 @@ export const translations: Record<string, Translations> = {
     // Availability Reminder
     availabilityReminderTitle: 'Availability Reminder',
     availabilityReminderMessage: 'You haven\'t added your availability for next month yet. Please complete it as soon as possible.',
-    setAvailabilityNow: 'Set availability now'
+    setAvailabilityNow: 'Set availability now',
+
+    // View Mode
+    tableView: 'Table View',
+    calendarView: 'Calendar View',
+    viewMode: 'View Mode',
+    availableEmployees: 'Available employees'
   }
 };

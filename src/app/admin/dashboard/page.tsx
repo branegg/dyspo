@@ -20,6 +20,7 @@ export default function AdminDashboard() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<User | null>(null);
   const [selectedAssignments, setSelectedAssignments] = useState<{[key: number]: DayAssignment}>({});
+  const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
   const router = useRouter();
   const { t } = useLanguage();
 
@@ -251,11 +252,6 @@ export default function AdminDashboard() {
     router.push('/');
   };
 
-  const monthNames = [
-    'Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
-    'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'
-  ];
-
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const allDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
@@ -319,11 +315,34 @@ export default function AdminDashboard() {
             </button>
           </div>
 
+          <div className="flex justify-center gap-2 mb-4 sm:mb-6">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                viewMode === 'table'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {t.tableView}
+            </button>
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                viewMode === 'calendar'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {t.calendarView}
+            </button>
+          </div>
+
           {availability.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              Brak danych o dyspozycyjności w tym miesiącu
+              {t.noAvailabilityData}
             </div>
-          ) : (
+          ) : viewMode === 'table' ? (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
@@ -374,6 +393,63 @@ export default function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          ) : (
+            <div>
+              <div className="grid grid-cols-7 gap-2 mb-4">
+                {t.dayNames.map(day => (
+                  <div key={day} className="text-center font-semibold text-gray-600 py-2 text-xs sm:text-sm">
+                    {day}
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-7 gap-2">
+                {allDays.map(day => {
+                  const availableEmployees = getAvailableEmployeesForDay(day);
+                  const availableCount = availableEmployees.length;
+
+                  const dayOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), day).getDay();
+                  const adjustedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+
+                  return (
+                    <div
+                      key={day}
+                      className={`border rounded p-2 min-h-[80px] sm:min-h-[100px] ${
+                        availableCount > 0
+                          ? 'bg-green-50 border-green-300'
+                          : 'bg-gray-50 border-gray-200'
+                      }`}
+                      style={{ gridColumn: day === 1 ? adjustedDay + 1 : undefined }}
+                    >
+                      <div className="font-bold text-gray-700 text-center mb-2 text-sm sm:text-base">
+                        {day}
+                      </div>
+                      {availableCount > 0 ? (
+                        <div className="space-y-1">
+                          <div className="text-xs sm:text-sm text-center font-semibold text-green-700 mb-1">
+                            {availableCount} {availableCount === 1 ? 'osoba' : availableCount < 5 ? 'osoby' : 'osób'}
+                          </div>
+                          <div className="space-y-1">
+                            {availableEmployees.map((emp) => (
+                              <div
+                                key={emp.userId}
+                                className="bg-white rounded px-1 py-1 text-xs text-center border border-green-200 truncate"
+                                title={emp.user.name}
+                              >
+                                {emp.user.name}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center text-gray-400 text-xs">
+                          {t.noAvailableEmployees}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
