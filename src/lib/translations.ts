@@ -159,6 +159,11 @@ export interface Translations {
   assignedDays: string;
   assignedHours: string;
   hoursUnit: string;
+
+  // View as employee (admin feature)
+  viewAsEmployee: string;
+  selectEmployee: string;
+  viewingAs: string;
 }
 
 export const translations: Record<string, Translations> = {
@@ -325,7 +330,12 @@ export const translations: Record<string, Translations> = {
     // Assignment Statistics
     assignedDays: 'Przydzielone dni',
     assignedHours: 'Godziny',
-    hoursUnit: 'godz.'
+    hoursUnit: 'godz.',
+
+    // View as employee (admin feature)
+    viewAsEmployee: 'Wyświetl jako pracownik',
+    selectEmployee: 'Wybierz pracownika',
+    viewingAs: 'Wyświetlasz jako'
   },
 
   en: {
@@ -491,6 +501,11 @@ export const translations: Record<string, Translations> = {
     // Assignment Statistics
     assignedDays: 'Assigned Days',
     assignedHours: 'Hours',
-    hoursUnit: 'hrs'
+    hoursUnit: 'hrs',
+
+    // View as employee (admin feature)
+    viewAsEmployee: 'View as employee',
+    selectEmployee: 'Select employee',
+    viewingAs: 'Viewing as'
   }
 };

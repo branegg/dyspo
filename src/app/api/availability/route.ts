@@ -21,9 +21,18 @@ export async function GET(request: NextRequest) {
     const year = parseInt(url.searchParams.get('year') || new Date().getFullYear().toString());
     const month = parseInt(url.searchParams.get('month') || (new Date().getMonth() + 1).toString());
 
+    // Allow admins to view other users' availability via userId parameter
+    const requestedUserId = url.searchParams.get('userId');
+    let targetUserId = decoded.userId;
+
+    // If admin is requesting another user's availability, allow it
+    if (requestedUserId && decoded.role === 'admin') {
+      targetUserId = requestedUserId;
+    }
+
     const db = await getDatabase();
     const availability = await db.collection<Availability>('availability').findOne({
-      userId: decoded.userId,
+      userId: targetUserId,
       year,
       month,
     });

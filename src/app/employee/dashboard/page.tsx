@@ -20,6 +20,9 @@ export default function EmployeeDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('availability');
   const [showReminder, setShowReminder] = useState(false);
   const [hasNextMonthAvailability, setHasNextMonthAvailability] = useState(true);
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
+  const [viewingEmployee, setViewingEmployee] = useState<any>(null);
   const router = useRouter();
   const { t } = useLanguage();
 
@@ -40,20 +43,64 @@ export default function EmployeeDashboard() {
     }
 
     setUser(parsedUser);
-    loadAvailability(token);
 
-    // Only check for next month availability reminder for employees (not admins)
-    if (parsedUser.role === 'employee') {
+    // Load employees list if admin
+    if (parsedUser.role === 'admin') {
+      loadEmployees(token);
+    } else {
+      loadAvailability(token);
       checkNextMonthAvailability(token);
     }
   }, [currentDate]);
 
-  const loadAvailability = async (token: string) => {
+  // Load availability when selected employee changes (for admins)
+  useEffect(() => {
+    if (user?.role === 'admin' && selectedEmployeeId) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        loadAvailability(token, selectedEmployeeId);
+        const employee = employees.find(emp => emp._id.toString() === selectedEmployeeId);
+        setViewingEmployee(employee);
+      }
+    }
+  }, [selectedEmployeeId, currentDate]);
+
+  const loadEmployees = async (token: string) => {
+    try {
+      const response = await fetch('/api/admin/employees', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (data.employees) {
+        setEmployees(data.employees);
+        // Set first employee as default
+        if (data.employees.length > 0) {
+          const firstEmployeeId = data.employees[0]._id.toString();
+          setSelectedEmployeeId(firstEmployeeId);
+          setViewingEmployee(data.employees[0]);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading employees:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAvailability = async (token: string, userId?: string) => {
     try {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
 
-      const response = await fetch(`/api/availability?year=${year}&month=${month}`, {
+      // If userId is provided (admin viewing as employee), add it to the query
+      const url = userId
+        ? `/api/availability?year=${year}&month=${month}&userId=${userId}`
+        : `/api/availability?year=${year}&month=${month}`;
+
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -170,6 +217,11 @@ export default function EmployeeDashboard() {
     setLoading(true);
   };
 
+  const handleEmployeeChange = (employeeId: string) => {
+    setSelectedEmployeeId(employeeId);
+    setLoading(true);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -202,7 +254,14 @@ export default function EmployeeDashboard() {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               {t.employeePanel}
             </h1>
-            <p className="text-sm sm:text-base text-gray-600">{t.welcome}, {user?.name}!</p>
+            <p className="text-sm sm:text-base text-gray-600">
+              {t.welcome}, {user?.name}!
+              {user?.role === 'admin' && viewingEmployee && (
+                <span className="ml-2 text-blue-600 font-semibold">
+                  ({t.viewingAs}: {viewingEmployee.name})
+                </span>
+              )}
+            </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
             <LanguageSwitcher />
@@ -222,6 +281,26 @@ export default function EmployeeDashboard() {
             </button>
           </div>
         </div>
+
+        {/* Admin: Employee Selector */}
+        {user?.role === 'admin' && employees.length > 0 && (
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              {t.selectEmployee}
+            </label>
+            <select
+              value={selectedEmployeeId || ''}
+              onChange={(e) => handleEmployeeChange(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {employees.map((emp) => (
+                <option key={emp._id} value={emp._id.toString()}>
+                  {emp.name} ({emp.email})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Availability Reminder Banner */}
         {showReminder && user?.role === 'employee' && (
@@ -318,7 +397,7 @@ export default function EmployeeDashboard() {
               year={currentDate.getFullYear()}
               month={currentDate.getMonth() + 1}
               selectedDays={selectedDays}
-              onDayToggle={handleDayToggle}
+              onDayToggle={user?.role === 'admin' ? () => {} : handleDayToggle}
             />
 
             <div className="mt-4 sm:mt-6 text-center">
@@ -326,23 +405,27 @@ export default function EmployeeDashboard() {
                 {t.selectedDays}: {selectedDays.length > 0 ? selectedDays.join(', ') : t.noSelectedDays}
               </p>
 
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="bg-green-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm sm:text-base w-full sm:w-auto"
-              >
-                {saving ? t.saving : t.saveAvailability}
-              </button>
+              {user?.role !== 'admin' && (
+                <>
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="bg-green-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm sm:text-base w-full sm:w-auto"
+                  >
+                    {saving ? t.saving : t.saveAvailability}
+                  </button>
 
-              {message && (
-                <div className={`mt-4 p-3 rounded text-sm sm:text-base ${
-                  message.includes(t.availabilitySaved) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                }`}>
-                  {message}
-              </div>
-            )}
+                  {message && (
+                    <div className={`mt-4 p-3 rounded text-sm sm:text-base ${
+                      message.includes(t.availabilitySaved) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}>
+                      {message}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
-        </div>
         ) : activeTab === 'mySchedule' ? (
           <div className="bg-white rounded-b-lg shadow-lg p-3 sm:p-6">
             <div className="flex justify-between items-center mb-4 sm:mb-6 gap-2">
@@ -364,7 +447,7 @@ export default function EmployeeDashboard() {
               year={currentDate.getFullYear()}
               month={currentDate.getMonth() + 1}
               userRole="employee"
-              userId={user?._id}
+              userId={user?.role === 'admin' ? selectedEmployeeId || user?._id : user?._id}
               myScheduleOnly={true}
             />
           </div>
@@ -389,7 +472,7 @@ export default function EmployeeDashboard() {
               year={currentDate.getFullYear()}
               month={currentDate.getMonth() + 1}
               userRole="employee"
-              userId={user?._id}
+              userId={user?.role === 'admin' ? selectedEmployeeId || user?._id : user?._id}
               myScheduleOnly={false}
             />
           </div>
