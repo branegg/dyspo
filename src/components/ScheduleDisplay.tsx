@@ -41,6 +41,7 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<'bagiety' | 'widok' | 'both'>('both');
+  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -240,37 +241,37 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
       const hasUserAssignment = assignment?.bagiety?.userId === userId || assignment?.widok?.userId === userId;
 
       content = (
-        <div className="space-y-1.5 w-full">
+        <div className="space-y-1 sm:space-y-1.5 w-full">
           {shouldShowBagiety && (
-            <div className={`rounded px-1.5 py-1 text-center ${
+            <div className={`rounded px-1 sm:px-1.5 py-0.5 sm:py-1 text-center ${
               isUserAssigned && assignment?.bagiety?.userId === userId
                 ? 'bg-green-500 text-white font-semibold'
                 : myScheduleOnly
                 ? 'bg-gray-100 text-gray-400 border border-gray-200'
                 : 'bg-blue-100 border border-blue-300'
             }`}>
-              <div className="text-[10px] font-bold mb-0.5">{t.bagiety}</div>
-              <div className="text-xs truncate" title={assignment?.bagiety?.name}>
+              <div className="text-[9px] sm:text-[10px] font-bold mb-0.5">{t.bagiety}</div>
+              <div className="text-[11px] sm:text-xs truncate" title={assignment?.bagiety?.name}>
                 {myScheduleOnly && !hasUserAssignment ? '' : (assignment?.bagiety?.name || '-')}
               </div>
             </div>
           )}
           {shouldShowWidok && (
-            <div className={`rounded px-1.5 py-1 text-center ${
+            <div className={`rounded px-1 sm:px-1.5 py-0.5 sm:py-1 text-center ${
               isUserAssigned && assignment?.widok?.userId === userId
                 ? 'bg-green-500 text-white font-semibold'
                 : myScheduleOnly
                 ? 'bg-gray-100 text-gray-400 border border-gray-200'
                 : 'bg-purple-100 border border-purple-300'
             }`}>
-              <div className="text-[10px] font-bold mb-0.5">{t.widok}</div>
-              <div className="text-xs truncate" title={assignment?.widok?.name}>
+              <div className="text-[9px] sm:text-[10px] font-bold mb-0.5">{t.widok}</div>
+              <div className="text-[11px] sm:text-xs truncate" title={assignment?.widok?.name}>
                 {myScheduleOnly && !hasUserAssignment ? '' : (assignment?.widok?.name || '-')}
               </div>
             </div>
           )}
           {isTuesday && selectedLocation === 'bagiety' && (
-            <div className="text-center text-gray-500 text-xs py-2">
+            <div className="text-center text-gray-500 text-[10px] sm:text-xs py-1 sm:py-2">
               {t.tuesdaysOnlyWidok}
             </div>
           )}
@@ -286,83 +287,173 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
     });
   }
 
+  // Helper function to get user's shifts for list view
+  const getUserShifts = () => {
+    if (!schedule || !userId) return [];
+
+    const shifts: Array<{ day: number; location: string; dayOfWeek: number }> = [];
+
+    schedule.assignments.forEach(assignment => {
+      if (assignment.bagiety?.userId === userId) {
+        const dayOfWeek = getDayOfWeek(year, month, assignment.day);
+        shifts.push({ day: assignment.day, location: t.bagiety, dayOfWeek });
+      }
+      if (assignment.widok?.userId === userId) {
+        const dayOfWeek = getDayOfWeek(year, month, assignment.day);
+        shifts.push({ day: assignment.day, location: t.widok, dayOfWeek });
+      }
+    });
+
+    return shifts.sort((a, b) => a.day - b.day);
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">
+    <div className="bg-white rounded-lg shadow p-3 sm:p-6">
+      <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
         {myScheduleOnly ? t.mySchedule : t.schedule} - {t.months[month - 1]} {year}
       </h3>
 
-      <div className="flex justify-center gap-2 mb-4">
-        <button
-          onClick={() => setSelectedLocation('bagiety')}
-          className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-            selectedLocation === 'bagiety'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
-        >
-          🥖 {t.bagiety}
-        </button>
-        <button
-          onClick={() => setSelectedLocation('widok')}
-          className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-            selectedLocation === 'widok'
-              ? 'bg-green-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
-        >
-          🌅 {t.widok}
-        </button>
-        <button
-          onClick={() => setSelectedLocation('both')}
-          className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-            selectedLocation === 'both'
-              ? 'bg-purple-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
-        >
-          {t.bothLocations}
-        </button>
-      </div>
-
-      <UnifiedCalendar
-        year={year}
-        month={month}
-        days={calendarDays}
-        showDayNames={true}
-        showMonthTitle={false}
-      />
-
-      {userRole === 'admin' && (
-        <div className="mt-4 text-xs text-gray-600">
-          <div className="flex space-x-4">
-            <span><strong>B:</strong> {t.bagiety}</span>
-            <span><strong>W:</strong> {t.widok}</span>
-            <span className="text-orange-600">{t.tuesdaysOnlyWidok}</span>
-          </div>
+      {/* View Mode Toggle for employees with myScheduleOnly */}
+      {userRole === 'employee' && myScheduleOnly && (
+        <div className="flex justify-center gap-2 mb-4">
+          <button
+            onClick={() => setViewMode('calendar')}
+            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+              viewMode === 'calendar'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            📅 {t.calendarView}
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+              viewMode === 'list'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            📋 {t.listView}
+          </button>
         </div>
       )}
 
-      {userRole === 'employee' && (
-        <div className="mt-4 text-xs">
-          <div className="flex flex-wrap gap-3 items-center">
-            <div className="flex items-center gap-2">
-              <div className="bg-green-500 text-white px-2 py-1 rounded font-semibold">
-                {t.yourShifts}
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="bg-blue-100 border border-blue-300 px-2 py-1 rounded">
-                {t.bagiety}
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="bg-purple-100 border border-purple-300 px-2 py-1 rounded">
-                {t.widok}
-              </div>
-            </div>
-          </div>
+      {/* Location Filter (only show for calendar view) */}
+      {viewMode === 'calendar' && (
+        <div className="flex justify-center gap-2 mb-4">
+          <button
+            onClick={() => setSelectedLocation('bagiety')}
+            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+              selectedLocation === 'bagiety'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            🥖 {t.bagiety}
+          </button>
+          <button
+            onClick={() => setSelectedLocation('widok')}
+            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+              selectedLocation === 'widok'
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            🌅 {t.widok}
+          </button>
+          <button
+            onClick={() => setSelectedLocation('both')}
+            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+              selectedLocation === 'both'
+                ? 'bg-purple-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            {t.bothLocations}
+          </button>
         </div>
+      )}
+
+      {/* List View for My Schedule (mobile-friendly) */}
+      {viewMode === 'list' && myScheduleOnly && userRole === 'employee' ? (
+        <div className="space-y-2">
+          {getUserShifts().length === 0 ? (
+            <div className="text-center text-gray-500 py-8">
+              {t.noShiftsAssigned}
+            </div>
+          ) : (
+            getUserShifts().map((shift, index) => (
+              <div
+                key={index}
+                className="bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500 p-4 rounded-lg shadow-sm"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-green-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">
+                      {shift.day}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-800 text-base">
+                        {t.dayNames[shift.dayOfWeek]}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {t.months[month - 1]} {shift.day}, {year}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white px-4 py-2 rounded-lg shadow-sm border-2 border-green-500">
+                    <div className="text-xs text-gray-500 font-medium">{t.location}</div>
+                    <div className="font-bold text-green-700 text-base">{shift.location}</div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      ) : (
+        <>
+          {/* Calendar View */}
+          <UnifiedCalendar
+            year={year}
+            month={month}
+            days={calendarDays}
+            showDayNames={true}
+            showMonthTitle={false}
+          />
+
+          {userRole === 'admin' && (
+            <div className="mt-4 text-xs text-gray-600">
+              <div className="flex space-x-4">
+                <span><strong>B:</strong> {t.bagiety}</span>
+                <span><strong>W:</strong> {t.widok}</span>
+                <span className="text-orange-600">{t.tuesdaysOnlyWidok}</span>
+              </div>
+            </div>
+          )}
+
+          {userRole === 'employee' && (
+            <div className="mt-4 text-xs sm:text-sm">
+              <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
+                <div className="flex items-center gap-2">
+                  <div className="bg-green-500 text-white px-2 py-1 rounded font-semibold text-xs sm:text-sm">
+                    {t.yourShifts}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="bg-blue-100 border border-blue-300 px-2 py-1 rounded text-xs sm:text-sm">
+                    {t.bagiety}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="bg-purple-100 border border-purple-300 px-2 py-1 rounded text-xs sm:text-sm">
+                    {t.widok}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

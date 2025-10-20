@@ -53,7 +53,7 @@ export default function UnifiedCalendar({
             return <div key={index} className="aspect-square"></div>;
           }
 
-          const baseClassName = "w-full h-full rounded-lg border-2 flex flex-col items-center justify-center p-1 sm:p-2 transition-all touch-manipulation";
+          const baseClassName = "w-full h-full rounded-lg border-2 flex flex-col items-center justify-start p-1 sm:p-2 transition-all touch-manipulation";
           const finalClassName = dayData.className
             ? `${baseClassName} ${dayData.className}`
             : `${baseClassName} ${
@@ -69,9 +69,9 @@ export default function UnifiedCalendar({
                 disabled={dayData.disabled}
                 className={finalClassName}
               >
-                <div className="font-medium text-xs sm:text-sm md:text-base">{dayData.day}</div>
+                <div className="font-bold text-sm sm:text-base md:text-lg mb-0.5">{dayData.day}</div>
                 {dayData.content && (
-                  <div className="flex-1 w-full overflow-hidden text-[10px] sm:text-xs mt-0.5 sm:mt-1">
+                  <div className="flex-1 w-full overflow-hidden text-[10px] sm:text-xs">
                     {dayData.content}
                   </div>
                 )}

@@ -149,8 +149,11 @@ export interface Translations {
   // View Mode
   tableView: string;
   calendarView: string;
+  listView: string;
   viewMode: string;
   availableEmployees: string;
+  location: string;
+  noShiftsAssigned: string;
 
   // Schedule Location
   bothLocations: string;
@@ -335,8 +338,11 @@ export const translations: Record<string, Translations> = {
     // View Mode
     tableView: 'Tabela',
     calendarView: 'Kalendarz',
+    listView: 'Lista',
     viewMode: 'Tryb widoku',
     availableEmployees: 'Dostępni pracownicy',
+    location: 'Lokalizacja',
+    noShiftsAssigned: 'Brak przydzielonych dyżurów',
 
     // Schedule Location
     bothLocations: 'Oba',
@@ -520,8 +526,11 @@ export const translations: Record<string, Translations> = {
     // View Mode
     tableView: 'Table View',
     calendarView: 'Calendar View',
+    listView: 'List View',
     viewMode: 'View Mode',
     availableEmployees: 'Available employees',
+    location: 'Location',
+    noShiftsAssigned: 'No shifts assigned yet',
 
     // Schedule Location
     bothLocations: 'Both',
