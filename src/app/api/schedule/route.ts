@@ -48,10 +48,8 @@ export async function GET(request: NextRequest) {
     const schedule = await db.collection('schedules').findOne({ year, month });
 
     if (!schedule) {
-      return NextResponse.json(
-        { error: 'Brak grafiku na ten miesiąc' },
-        { status: 404 }
-      );
+      // Return null schedule instead of 404, consistent with admin endpoint
+      return NextResponse.json(null);
     }
 
     // Get all users for lookup
@@ -92,8 +90,12 @@ export async function GET(request: NextRequest) {
     }));
 
     const scheduleWithUsers = {
-      ...schedule,
-      assignments: populatedAssignments
+      _id: schedule._id.toString(),
+      year: schedule.year,
+      month: schedule.month,
+      assignments: populatedAssignments,
+      createdAt: schedule.createdAt,
+      updatedAt: schedule.updatedAt
     };
 
     return NextResponse.json(scheduleWithUsers);

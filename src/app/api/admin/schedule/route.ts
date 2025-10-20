@@ -70,8 +70,12 @@ export async function GET(request: NextRequest) {
     }));
 
     const scheduleWithUsers = {
-      ...schedule,
-      assignments: populatedAssignments
+      _id: schedule._id.toString(),
+      year: schedule.year,
+      month: schedule.month,
+      assignments: populatedAssignments,
+      createdAt: schedule.createdAt,
+      updatedAt: schedule.updatedAt
     };
 
     return NextResponse.json({

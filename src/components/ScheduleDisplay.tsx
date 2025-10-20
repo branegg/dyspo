@@ -68,9 +68,11 @@ export default function ScheduleDisplay({ year, month, userRole, userId, mySched
         const data = await response.json();
 
         // Handle different response formats from admin vs employee endpoints
-        if (userRole === 'admin' && data.schedule) {
+        if (userRole === 'admin') {
+          // Admin endpoint returns { schedule: ... }
           setSchedule(data.schedule);
         } else if (userRole === 'employee') {
+          // Employee endpoint returns schedule directly (or null)
           setSchedule(data);
         } else {
           setSchedule(null);
