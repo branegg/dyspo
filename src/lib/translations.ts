@@ -169,8 +169,11 @@ export interface Translations {
   availabilityLocked: string;
   availabilityLockedMessage: string;
   unlockAvailability: string;
+  lockAvailability: string;
   unlockSuccess: string;
+  lockSuccess: string;
   unlockError: string;
+  lockError: string;
   cannotEditLocked: string;
   locked: string;
   unlocked: string;
@@ -352,8 +355,11 @@ export const translations: Record<string, Translations> = {
     availabilityLocked: 'Dyspozycyjność zablokowana',
     availabilityLockedMessage: 'Twoja dyspozycyjność na ten miesiąc jest zablokowana. Skontaktuj się z administratorem, aby wprowadzić zmiany.',
     unlockAvailability: 'Odblokuj dyspozycyjność',
+    lockAvailability: 'Zablokuj dyspozycyjność',
     unlockSuccess: 'Dyspozycyjność została odblokowana',
+    lockSuccess: 'Dyspozycyjność została zablokowana',
     unlockError: 'Błąd podczas odblokowywania dyspozycyjności',
+    lockError: 'Błąd podczas blokowania dyspozycyjności',
     cannotEditLocked: 'Nie można edytować zablokowanej dyspozycyjności',
     locked: 'Zablokowana',
     unlocked: 'Odblokowana',
@@ -534,8 +540,11 @@ export const translations: Record<string, Translations> = {
     availabilityLocked: 'Availability locked',
     availabilityLockedMessage: 'Your availability for this month is locked. Contact admin to make changes.',
     unlockAvailability: 'Unlock Availability',
+    lockAvailability: 'Lock Availability',
     unlockSuccess: 'Availability unlocked successfully',
+    lockSuccess: 'Availability locked successfully',
     unlockError: 'Error unlocking availability',
+    lockError: 'Error locking availability',
     cannotEditLocked: 'Cannot edit locked availability',
     locked: 'Locked',
     unlocked: 'Unlocked',

@@ -349,6 +349,35 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleLockAvailability = async (userId: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+
+      const response = await fetch('/api/admin/availability/lock', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId, year, month }),
+      });
+
+      if (response.ok) {
+        alert(t.lockSuccess);
+        // Reload availability data
+        if (token) {
+          loadAvailability(token);
+        }
+      } else {
+        alert(t.lockError);
+      }
+    } catch (error) {
+      alert(t.lockError);
+    }
+  };
+
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const allDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
@@ -513,12 +542,19 @@ export default function AdminDashboard() {
                         {item.availableDays.length}
                       </td>
                       <td className="border p-3 text-center">
-                        {isLocked && (
+                        {isLocked ? (
                           <button
                             onClick={() => handleUnlockAvailability(item.userId)}
                             className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 text-sm"
                           >
-                            {t.unlockAvailability}
+                            🔓 {t.unlockAvailability}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleLockAvailability(item.userId)}
+                            className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 text-sm"
+                          >
+                            🔒 {t.lockAvailability}
                           </button>
                         )}
                       </td>
@@ -811,14 +847,24 @@ export default function AdminDashboard() {
                         </td>
                         <td className="border p-3 text-center">
                           <div className="flex gap-2 justify-center flex-wrap">
-                            {hasAvailability && isLocked && (
-                              <button
-                                onClick={() => handleUnlockAvailability(employee._id || '')}
-                                className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 text-sm whitespace-nowrap"
-                                title={t.unlockAvailability}
-                              >
-                                🔓 Odblokuj
-                              </button>
+                            {hasAvailability && (
+                              isLocked ? (
+                                <button
+                                  onClick={() => handleUnlockAvailability(employee._id || '')}
+                                  className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 text-sm whitespace-nowrap"
+                                  title={t.unlockAvailability}
+                                >
+                                  🔓 Odblokuj
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleLockAvailability(employee._id || '')}
+                                  className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 text-sm whitespace-nowrap"
+                                  title={t.lockAvailability}
+                                >
+                                  🔒 Zablokuj
+                                </button>
+                              )
                             )}
                             <button
                               onClick={() => handleEditEmployee(employee)}

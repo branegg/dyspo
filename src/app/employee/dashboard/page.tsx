@@ -259,6 +259,38 @@ export default function EmployeeDashboard() {
     }
   };
 
+  const handleAdminLock = async () => {
+    if (!selectedEmployeeId) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+
+      const response = await fetch('/api/admin/availability/lock', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId: selectedEmployeeId, year, month }),
+      });
+
+      if (response.ok) {
+        setMessage(t.lockSuccess);
+        setIsLocked(true);
+        // Reload availability
+        if (token) {
+          loadAvailability(token, selectedEmployeeId);
+        }
+      } else {
+        setMessage(t.lockError);
+      }
+    } catch (error) {
+      setMessage(t.lockError);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -339,18 +371,29 @@ export default function EmployeeDashboard() {
                   ))}
                 </select>
               </div>
-              {isLocked && (
+              {isLocked ? (
                 <button
                   onClick={handleAdminUnlock}
                   className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 text-sm whitespace-nowrap w-full sm:w-auto"
                 >
                   🔓 {t.unlockAvailability}
                 </button>
+              ) : (
+                <button
+                  onClick={handleAdminLock}
+                  className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 text-sm whitespace-nowrap w-full sm:w-auto"
+                >
+                  🔒 {t.lockAvailability}
+                </button>
               )}
             </div>
-            {isLocked && (
+            {isLocked ? (
               <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
                 <span className="font-semibold">🔒 {t.locked}</span> - {t.availabilityLockedMessage}
+              </div>
+            ) : (
+              <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-800">
+                <span className="font-semibold">🔓 {t.unlocked}</span> - Pracownik może edytować dyspozycyjność
               </div>
             )}
           </div>
