@@ -181,6 +181,24 @@ export default function AdminDashboard() {
     return availability.filter(item => item.availableDays.includes(day));
   };
 
+  const employeeColors = [
+    { bg: 'bg-blue-100', border: 'border-blue-300', text: 'text-blue-800' },
+    { bg: 'bg-purple-100', border: 'border-purple-300', text: 'text-purple-800' },
+    { bg: 'bg-pink-100', border: 'border-pink-300', text: 'text-pink-800' },
+    { bg: 'bg-orange-100', border: 'border-orange-300', text: 'text-orange-800' },
+    { bg: 'bg-teal-100', border: 'border-teal-300', text: 'text-teal-800' },
+    { bg: 'bg-indigo-100', border: 'border-indigo-300', text: 'text-indigo-800' },
+    { bg: 'bg-cyan-100', border: 'border-cyan-300', text: 'text-cyan-800' },
+    { bg: 'bg-rose-100', border: 'border-rose-300', text: 'text-rose-800' },
+    { bg: 'bg-amber-100', border: 'border-amber-300', text: 'text-amber-800' },
+    { bg: 'bg-lime-100', border: 'border-lime-300', text: 'text-lime-800' },
+  ];
+
+  const getEmployeeColor = (userId: string) => {
+    const employeeIndex = availability.findIndex(item => item.userId === userId);
+    return employeeColors[employeeIndex % employeeColors.length];
+  };
+
   const updateDayAssignment = (day: number, bagiety: string | null, widok: string | null) => {
     // Validation: same person can't be on both locations
     if (bagiety && widok && bagiety === widok) {
@@ -430,15 +448,18 @@ export default function AdminDashboard() {
                             {availableCount} {availableCount === 1 ? 'osoba' : availableCount < 5 ? 'osoby' : 'osób'}
                           </div>
                           <div className="space-y-1">
-                            {availableEmployees.map((emp) => (
-                              <div
-                                key={emp.userId}
-                                className="bg-white rounded px-1 py-1 text-xs text-center border border-green-200 truncate"
-                                title={emp.user.name}
-                              >
-                                {emp.user.name}
-                              </div>
-                            ))}
+                            {availableEmployees.map((emp) => {
+                              const colors = getEmployeeColor(emp.userId);
+                              return (
+                                <div
+                                  key={emp.userId}
+                                  className={`${colors.bg} ${colors.border} ${colors.text} rounded px-1 py-1 text-xs text-center border truncate`}
+                                  title={emp.user.name}
+                                >
+                                  {emp.user.name}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       ) : (
