@@ -469,61 +469,39 @@ export default function AdminDashboard() {
               {t.noAvailabilityData}
             </div>
           ) : viewMode === 'table' ? (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr>
-                    <th className="border p-3 bg-gray-50 text-left font-semibold">
-                      Pracownik
-                    </th>
-                    <th className="border p-3 bg-gray-50 text-left font-semibold">
-                      Email
-                    </th>
-                    <th className="border p-3 bg-gray-50 text-center font-semibold">
-                      Status
-                    </th>
-                    <th className="border p-3 bg-gray-50 text-center font-semibold">
-                      Dostępne dni
-                    </th>
-                    <th className="border p-3 bg-gray-50 text-center font-semibold">
-                      Liczba dni
-                    </th>
-                    <th className="border p-3 bg-gray-50 text-center font-semibold">
-                      Akcja
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {availability.map((item, index) => {
-                    // Default to locked if field doesn't exist (for existing records)
-                    const isLocked = item.isLocked !== undefined ? item.isLocked : true;
-                    return (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="border p-3 font-medium">
-                        {item.user.name}
-                      </td>
-                      <td className="border p-3 text-gray-600">
-                        {item.user.email}
-                      </td>
-                      <td className="border p-3 text-center">
-                        {isLocked ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm font-medium">
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                            </svg>
-                            {t.locked}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 rounded text-sm font-medium">
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z" />
-                            </svg>
-                            {t.unlocked}
-                          </span>
-                        )}
-                      </td>
-                      <td className="border p-3 text-center">
-                        <div className="flex flex-wrap gap-1 justify-center">
+            <>
+              {/* Mobile Card View */}
+              <div className="block lg:hidden space-y-4">
+                {availability.map((item, index) => {
+                  const isLocked = item.isLocked !== undefined ? item.isLocked : true;
+                  return (
+                    <div key={index} className="border rounded-lg p-4 bg-white shadow-sm">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="font-bold text-gray-900">{item.user.name}</h4>
+                          <p className="text-sm text-gray-600">{item.user.email}</p>
+                        </div>
+                        <div>
+                          {isLocked ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-medium">
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                              </svg>
+                              {t.locked}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z" />
+                              </svg>
+                              {t.unlocked}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="mb-3">
+                        <p className="text-sm font-medium text-gray-700 mb-2">Dostępne dni ({item.availableDays.length}):</p>
+                        <div className="flex flex-wrap gap-1">
                           {item.availableDays.length > 0 ? (
                             item.availableDays.map(day => (
                               <span
@@ -534,36 +512,129 @@ export default function AdminDashboard() {
                               </span>
                             ))
                           ) : (
-                            <span className="text-gray-500">Brak</span>
+                            <span className="text-gray-500 text-sm">Brak</span>
                           )}
                         </div>
-                      </td>
-                      <td className="border p-3 text-center font-semibold">
-                        {item.availableDays.length}
-                      </td>
-                      <td className="border p-3 text-center">
+                      </div>
+                      <div className="pt-3 border-t">
                         {isLocked ? (
                           <button
                             onClick={() => handleUnlockAvailability(item.userId)}
-                            className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 text-sm"
+                            className="w-full bg-orange-600 text-white px-3 py-2 rounded hover:bg-orange-700 text-sm"
                           >
                             🔓 {t.unlockAvailability}
                           </button>
                         ) : (
                           <button
                             onClick={() => handleLockAvailability(item.userId)}
-                            className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 text-sm"
+                            className="w-full bg-yellow-600 text-white px-3 py-2 rounded hover:bg-yellow-700 text-sm"
                           >
                             🔒 {t.lockAvailability}
                           </button>
                         )}
-                      </td>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr>
+                      <th className="border p-3 bg-gray-50 text-left font-semibold">
+                        Pracownik
+                      </th>
+                      <th className="border p-3 bg-gray-50 text-left font-semibold">
+                        Email
+                      </th>
+                      <th className="border p-3 bg-gray-50 text-center font-semibold">
+                        Status
+                      </th>
+                      <th className="border p-3 bg-gray-50 text-center font-semibold">
+                        Dostępne dni
+                      </th>
+                      <th className="border p-3 bg-gray-50 text-center font-semibold">
+                        Liczba dni
+                      </th>
+                      <th className="border p-3 bg-gray-50 text-center font-semibold">
+                        Akcja
+                      </th>
                     </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {availability.map((item, index) => {
+                      // Default to locked if field doesn't exist (for existing records)
+                      const isLocked = item.isLocked !== undefined ? item.isLocked : true;
+                      return (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="border p-3 font-medium">
+                          {item.user.name}
+                        </td>
+                        <td className="border p-3 text-gray-600">
+                          {item.user.email}
+                        </td>
+                        <td className="border p-3 text-center">
+                          {isLocked ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm font-medium">
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                              </svg>
+                              {t.locked}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 rounded text-sm font-medium">
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z" />
+                              </svg>
+                              {t.unlocked}
+                            </span>
+                          )}
+                        </td>
+                        <td className="border p-3 text-center">
+                          <div className="flex flex-wrap gap-1 justify-center">
+                            {item.availableDays.length > 0 ? (
+                              item.availableDays.map(day => (
+                                <span
+                                  key={day}
+                                  className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded text-sm"
+                                >
+                                  {day}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-gray-500">Brak</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="border p-3 text-center font-semibold">
+                          {item.availableDays.length}
+                        </td>
+                        <td className="border p-3 text-center">
+                          {isLocked ? (
+                            <button
+                              onClick={() => handleUnlockAvailability(item.userId)}
+                              className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 text-sm"
+                            >
+                              🔓 {t.unlockAvailability}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleLockAvailability(item.userId)}
+                              className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 text-sm"
+                            >
+                              🔒 {t.lockAvailability}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           ) : (
             <div>
               <div className="grid grid-cols-7 gap-2 mb-4">
@@ -627,21 +698,21 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-bold">Budowanie Grafiku</h3>
+        <div className="bg-white rounded-lg shadow-lg p-3 sm:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+            <h3 className="text-lg sm:text-xl font-bold">Budowanie Grafiku</h3>
             <button
               onClick={saveSchedule}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+              className="w-full sm:w-auto bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm sm:text-base"
             >
               Zapisz Grafik
             </button>
           </div>
 
-          <div className="flex justify-center gap-2 mb-4">
+          <div className="flex justify-center gap-1 sm:gap-2 mb-4">
             <button
               onClick={() => setScheduleLocation('bagiety')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                 scheduleLocation === 'bagiety'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -651,7 +722,7 @@ export default function AdminDashboard() {
             </button>
             <button
               onClick={() => setScheduleLocation('widok')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                 scheduleLocation === 'widok'
                   ? 'bg-green-600 text-white'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -661,7 +732,7 @@ export default function AdminDashboard() {
             </button>
             <button
               onClick={() => setScheduleLocation('both')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                 scheduleLocation === 'both'
                   ? 'bg-purple-600 text-white'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -671,14 +742,14 @@ export default function AdminDashboard() {
             </button>
           </div>
 
-          <div className="grid grid-cols-7 gap-2 mb-4">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2 sm:mb-4">
             {t.dayNames.map(day => (
-              <div key={day} className="text-center font-semibold text-gray-600 py-2">
+              <div key={day} className="text-center font-semibold text-gray-600 py-1 sm:py-2 text-xs sm:text-sm">
                 {day}
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
             {allDays.map(day => {
               const availableEmployees = getAvailableEmployeesForDay(day);
               const availableCount = availableEmployees.length;
@@ -697,22 +768,23 @@ export default function AdminDashboard() {
               return (
                 <div
                   key={day}
-                  className={`border rounded p-2 text-xs ${dayColor}`}
+                  className={`border rounded p-1 sm:p-2 text-xs ${dayColor}`}
                   style={{ gridColumn: day === 1 ? adjustedDay + 1 : undefined }}
                   title={tooltipText}
                 >
-                  <div className="space-y-2">
-                    <div className="font-semibold text-gray-700 text-center">{day}</div>
+                  <div className="space-y-1 sm:space-y-2">
+                    <div className="font-semibold text-gray-700 text-center text-xs sm:text-sm">{day}</div>
 
                     {availableCount > 0 ? (
                       <>
                         {!isTuesday && (scheduleLocation === 'bagiety' || scheduleLocation === 'both') && (
                           <div>
-                            <label className="block text-xs font-medium text-blue-600 mb-1">🥖 Bagiety</label>
+                            <label className="hidden sm:block text-xs font-medium text-blue-600 mb-1">🥖 Bagiety</label>
+                            <label className="block sm:hidden text-[10px] font-medium text-blue-600 mb-0.5">🥖</label>
                             <select
                               value={assignment?.bagiety || ''}
                               onChange={(e) => updateDayAssignment(day, e.target.value || null, assignment?.widok || null)}
-                              className="w-full px-1 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              className="w-full px-0.5 sm:px-1 py-0.5 sm:py-1 text-[10px] sm:text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <option value="">--</option>
@@ -727,11 +799,12 @@ export default function AdminDashboard() {
 
                         {(scheduleLocation === 'widok' || scheduleLocation === 'both') && (
                           <div>
-                            <label className="block text-xs font-medium text-green-600 mb-1">🌅 Widok</label>
+                            <label className="hidden sm:block text-xs font-medium text-green-600 mb-1">🌅 Widok</label>
+                            <label className="block sm:hidden text-[10px] font-medium text-green-600 mb-0.5">🌅</label>
                             <select
                               value={assignment?.widok || ''}
                               onChange={(e) => updateDayAssignment(day, assignment?.bagiety || null, e.target.value || null)}
-                              className="w-full px-1 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
+                              className="w-full px-0.5 sm:px-1 py-0.5 sm:py-1 text-[10px] sm:text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <option value="">--</option>
@@ -745,13 +818,13 @@ export default function AdminDashboard() {
                         )}
 
                         {isTuesday && scheduleLocation === 'bagiety' && (
-                          <div className="text-center text-gray-500 text-xs py-2">
+                          <div className="text-center text-gray-500 text-[10px] sm:text-xs py-1 sm:py-2">
                             Wtorek - brak Bagiety
                           </div>
                         )}
                       </>
                     ) : (
-                      <div className="text-center text-gray-400 text-xs py-2">
+                      <div className="text-center text-gray-400 text-[10px] sm:text-xs py-1 sm:py-2">
                         Brak dostępnych
                       </div>
                     )}
@@ -776,10 +849,10 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-6 mt-6">
+        <div className="bg-white rounded-lg shadow-lg p-3 sm:p-6 mt-6">
           <div className="mb-4">
-            <h3 className="text-xl font-bold">Lista Pracowników ({employees.length})</h3>
-            <p className="text-sm text-gray-600 mt-1">
+            <h3 className="text-lg sm:text-xl font-bold">Lista Pracowników ({employees.length})</h3>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">
               {t.assignedDays} / {t.assignedHours} dla: {t.months[currentDate.getMonth()]} {currentDate.getFullYear()}
             </p>
           </div>
@@ -788,104 +861,184 @@ export default function AdminDashboard() {
               Brak zarejestrowanych pracowników
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr>
-                    <th className="border p-3 bg-gray-50 text-left font-semibold">
-                      {t.name}
-                    </th>
-                    <th className="border p-3 bg-gray-50 text-left font-semibold">
-                      {t.email}
-                    </th>
-                    <th className="border p-3 bg-gray-50 text-center font-semibold">
-                      {t.registrationDate}
-                    </th>
-                    <th className="border p-3 bg-gray-50 text-center font-semibold">
-                      {t.assignedDays}
-                    </th>
-                    <th className="border p-3 bg-gray-50 text-center font-semibold">
-                      {t.assignedHours}
-                    </th>
-                    <th className="border p-3 bg-gray-50 text-center font-semibold">
-                      {t.actions}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {employees.map((employee) => {
-                    const stats = getEmployeeAssignmentStats(employee._id || '');
-                    // Check if employee has availability for current month
-                    const employeeAvailability = availability.find(a => a.userId === employee._id);
-                    const hasAvailability = !!employeeAvailability;
-                    const isLocked = employeeAvailability?.isLocked !== undefined ? employeeAvailability.isLocked : true;
+            <>
+              {/* Mobile Card View */}
+              <div className="block lg:hidden space-y-4">
+                {employees.map((employee) => {
+                  const stats = getEmployeeAssignmentStats(employee._id || '');
+                  const employeeAvailability = availability.find(a => a.userId === employee._id);
+                  const hasAvailability = !!employeeAvailability;
+                  const isLocked = employeeAvailability?.isLocked !== undefined ? employeeAvailability.isLocked : true;
 
-                    return (
-                      <tr key={employee._id} className="hover:bg-gray-50">
-                        <td className="border p-3 font-medium">
-                          {employee.name}
-                        </td>
-                        <td className="border p-3 text-gray-600">
-                          {employee.email}
-                        </td>
-                        <td className="border p-3 text-center text-gray-600">
-                          {new Date(employee.createdAt).toLocaleDateString('pl-PL')}
-                        </td>
-                        <td className="border p-3 text-center">
-                          <span className={`inline-block px-3 py-1 rounded font-semibold ${
+                  return (
+                    <div key={employee._id} className="border rounded-lg p-4 bg-white shadow-sm">
+                      <div className="mb-3">
+                        <h4 className="font-bold text-gray-900">{employee.name}</h4>
+                        <p className="text-sm text-gray-600">{employee.email}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {t.registrationDate}: {new Date(employee.createdAt).toLocaleDateString('pl-PL')}
+                        </p>
+                      </div>
+
+                      <div className="flex gap-3 mb-3">
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-600 mb-1">{t.assignedDays}</p>
+                          <span className={`inline-block w-full text-center px-3 py-2 rounded font-semibold ${
                             stats.days > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
                           }`}>
                             {stats.days}
                           </span>
-                        </td>
-                        <td className="border p-3 text-center">
-                          <span className={`inline-block px-3 py-1 rounded font-semibold ${
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-600 mb-1">{t.assignedHours}</p>
+                          <span className={`inline-block w-full text-center px-3 py-2 rounded font-semibold ${
                             stats.hours > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
                           }`}>
                             {stats.hours} {t.hoursUnit}
                           </span>
-                        </td>
-                        <td className="border p-3 text-center">
-                          <div className="flex gap-2 justify-center flex-wrap">
-                            {hasAvailability && (
-                              isLocked ? (
-                                <button
-                                  onClick={() => handleUnlockAvailability(employee._id || '')}
-                                  className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 text-sm whitespace-nowrap"
-                                  title={t.unlockAvailability}
-                                >
-                                  🔓 Odblokuj
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() => handleLockAvailability(employee._id || '')}
-                                  className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 text-sm whitespace-nowrap"
-                                  title={t.lockAvailability}
-                                >
-                                  🔒 Zablokuj
-                                </button>
-                              )
-                            )}
+                        </div>
+                      </div>
+
+                      <div className="pt-3 border-t space-y-2">
+                        {hasAvailability && (
+                          isLocked ? (
                             <button
-                              onClick={() => handleEditEmployee(employee)}
-                              className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
+                              onClick={() => handleUnlockAvailability(employee._id || '')}
+                              className="w-full bg-orange-600 text-white px-3 py-2 rounded hover:bg-orange-700 text-sm"
+                              title={t.unlockAvailability}
                             >
-                              {t.edit}
+                              🔓 Odblokuj
                             </button>
+                          ) : (
                             <button
-                              onClick={() => handleDeleteEmployee(employee)}
-                              className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm"
+                              onClick={() => handleLockAvailability(employee._id || '')}
+                              className="w-full bg-yellow-600 text-white px-3 py-2 rounded hover:bg-yellow-700 text-sm"
+                              title={t.lockAvailability}
                             >
-                              {t.delete}
+                              🔒 Zablokuj
                             </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          )
+                        )}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEditEmployee(employee)}
+                            className="flex-1 bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm"
+                          >
+                            {t.edit}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteEmployee(employee)}
+                            className="flex-1 bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 text-sm"
+                          >
+                            {t.delete}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr>
+                      <th className="border p-3 bg-gray-50 text-left font-semibold">
+                        {t.name}
+                      </th>
+                      <th className="border p-3 bg-gray-50 text-left font-semibold">
+                        {t.email}
+                      </th>
+                      <th className="border p-3 bg-gray-50 text-center font-semibold">
+                        {t.registrationDate}
+                      </th>
+                      <th className="border p-3 bg-gray-50 text-center font-semibold">
+                        {t.assignedDays}
+                      </th>
+                      <th className="border p-3 bg-gray-50 text-center font-semibold">
+                        {t.assignedHours}
+                      </th>
+                      <th className="border p-3 bg-gray-50 text-center font-semibold">
+                        {t.actions}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {employees.map((employee) => {
+                      const stats = getEmployeeAssignmentStats(employee._id || '');
+                      // Check if employee has availability for current month
+                      const employeeAvailability = availability.find(a => a.userId === employee._id);
+                      const hasAvailability = !!employeeAvailability;
+                      const isLocked = employeeAvailability?.isLocked !== undefined ? employeeAvailability.isLocked : true;
+
+                      return (
+                        <tr key={employee._id} className="hover:bg-gray-50">
+                          <td className="border p-3 font-medium">
+                            {employee.name}
+                          </td>
+                          <td className="border p-3 text-gray-600">
+                            {employee.email}
+                          </td>
+                          <td className="border p-3 text-center text-gray-600">
+                            {new Date(employee.createdAt).toLocaleDateString('pl-PL')}
+                          </td>
+                          <td className="border p-3 text-center">
+                            <span className={`inline-block px-3 py-1 rounded font-semibold ${
+                              stats.days > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              {stats.days}
+                            </span>
+                          </td>
+                          <td className="border p-3 text-center">
+                            <span className={`inline-block px-3 py-1 rounded font-semibold ${
+                              stats.hours > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              {stats.hours} {t.hoursUnit}
+                            </span>
+                          </td>
+                          <td className="border p-3 text-center">
+                            <div className="flex gap-2 justify-center flex-wrap">
+                              {hasAvailability && (
+                                isLocked ? (
+                                  <button
+                                    onClick={() => handleUnlockAvailability(employee._id || '')}
+                                    className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 text-sm whitespace-nowrap"
+                                    title={t.unlockAvailability}
+                                  >
+                                    🔓 Odblokuj
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => handleLockAvailability(employee._id || '')}
+                                    className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 text-sm whitespace-nowrap"
+                                    title={t.lockAvailability}
+                                  >
+                                    🔒 Zablokuj
+                                  </button>
+                                )
+                              )}
+                              <button
+                                onClick={() => handleEditEmployee(employee)}
+                                className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
+                              >
+                                {t.edit}
+                              </button>
+                              <button
+                                onClick={() => handleDeleteEmployee(employee)}
+                                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm"
+                              >
+                                {t.delete}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
 
