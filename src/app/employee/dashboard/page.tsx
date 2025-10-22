@@ -560,7 +560,7 @@ export default function EmployeeDashboard() {
               year={currentDate.getFullYear()}
               month={currentDate.getMonth() + 1}
               userRole="employee"
-              userId={user?.role === 'admin' ? selectedEmployeeId || user?._id : user?._id}
+              userId={user?.role === 'admin' ? selectedEmployeeId || user?.id : user?.id}
               myScheduleOnly={true}
             />
           </div>
@@ -585,7 +585,7 @@ export default function EmployeeDashboard() {
               year={currentDate.getFullYear()}
               month={currentDate.getMonth() + 1}
               userRole="employee"
-              userId={user?.role === 'admin' ? selectedEmployeeId || user?._id : user?._id}
+              userId={user?.role === 'admin' ? selectedEmployeeId || user?.id : user?.id}
               myScheduleOnly={false}
             />
           </div>
