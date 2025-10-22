@@ -76,7 +76,7 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
         <DialogHeader>
           <DialogTitle>{t.addEmployee}</DialogTitle>
           <DialogDescription>
-            {t.addEmployeeDescription || "Create a new employee account with temporary credentials."}
+            Create a new employee account with temporary credentials.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -107,7 +107,7 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">{t.temporaryPassword || "Temporary Password"}</Label>
+            <Label htmlFor="password">{t.password}</Label>
             <Input
               type="password"
               id="password"
@@ -139,7 +139,7 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
               disabled={loading}
               className="bg-emerald-600 hover:bg-emerald-700"
             >
-              {loading ? t.creating : t.addEmployee}
+              {loading ? t.saving : t.addEmployee}
             </Button>
           </DialogFooter>
         </form>
