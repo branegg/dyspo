@@ -38,28 +38,28 @@ export default function UnifiedCalendar({
       )}
 
       {showDayNames && (
-        <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2">
+        <div className="grid grid-cols-7 gap-2 mb-3">
           {t.dayNames.map((dayName) => (
-            <div key={dayName} className="text-center font-semibold text-gray-600 py-1 sm:py-2 text-xs sm:text-sm">
+            <div key={dayName} className="text-center font-semibold text-muted-foreground py-2 text-xs sm:text-sm">
               {dayName}
             </div>
           ))}
         </div>
       )}
 
-      <div className="grid grid-cols-7 gap-1 sm:gap-2">
+      <div className="grid grid-cols-7 gap-2">
         {days.map((dayData, index) => {
           if (!dayData.day) {
             return <div key={index} className="aspect-square"></div>;
           }
 
-          const baseClassName = "w-full h-full rounded-lg border-2 flex flex-col items-center justify-start p-1 sm:p-2 transition-all touch-manipulation";
+          const baseClassName = "w-full h-full rounded-md border flex flex-col items-center justify-start p-1 sm:p-2 transition-all duration-150 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed";
           const finalClassName = dayData.className
             ? `${baseClassName} ${dayData.className}`
             : `${baseClassName} ${
                 dayData.isSelected
-                  ? 'bg-green-500 text-white border-green-500 hover:bg-green-600 active:bg-green-700'
-                  : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 hover:border-gray-300 active:bg-gray-200'
+                  ? 'bg-primary text-primary-foreground border-primary hover:bg-primary/90 shadow-sm'
+                  : 'bg-background text-foreground border-border hover:bg-accent hover:border-accent-foreground/20 hover:shadow-sm'
               }`;
 
           return (
@@ -69,9 +69,9 @@ export default function UnifiedCalendar({
                 disabled={dayData.disabled}
                 className={finalClassName}
               >
-                <div className="font-bold text-sm sm:text-base md:text-lg mb-0.5">{dayData.day}</div>
+                <div className="font-semibold text-sm sm:text-base md:text-lg mb-0.5">{dayData.day}</div>
                 {dayData.content && (
-                  <div className="flex-1 w-full overflow-hidden text-[10px] sm:text-xs">
+                  <div className="flex-1 w-full overflow-hidden text-[10px] sm:text-xs leading-tight">
                     {dayData.content}
                   </div>
                 )}
