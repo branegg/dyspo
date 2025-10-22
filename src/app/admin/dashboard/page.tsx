@@ -11,7 +11,18 @@ import BagietyLoader from '@/components/BagietyLoader';
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<any>(null);
-  const [currentDate, setCurrentDate] = useState(new Date());
+  // Set default date: if after 20th of month, show next month
+  const getDefaultDate = () => {
+    const today = new Date();
+    const dayOfMonth = today.getDate();
+    if (dayOfMonth > 20) {
+      const nextMonth = new Date(today);
+      nextMonth.setMonth(today.getMonth() + 1);
+      return nextMonth;
+    }
+    return today;
+  };
+  const [currentDate, setCurrentDate] = useState(getDefaultDate());
   const [availability, setAvailability] = useState<AvailabilityWithUser[]>([]);
   const [employees, setEmployees] = useState<User[]>([]);
   const [schedule, setSchedule] = useState<ScheduleWithUsers | null>(null);

@@ -12,7 +12,18 @@ type TabType = 'availability' | 'schedule' | 'mySchedule';
 
 export default function EmployeeDashboard() {
   const [user, setUser] = useState<any>(null);
-  const [currentDate, setCurrentDate] = useState(new Date());
+  // Set default date: if after 20th of month, show next month
+  const getDefaultDate = () => {
+    const today = new Date();
+    const dayOfMonth = today.getDate();
+    if (dayOfMonth > 20) {
+      const nextMonth = new Date(today);
+      nextMonth.setMonth(today.getMonth() + 1);
+      return nextMonth;
+    }
+    return today;
+  };
+  const [currentDate, setCurrentDate] = useState(getDefaultDate());
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
