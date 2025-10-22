@@ -4,6 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function EmployeeRegister() {
   const [formData, setFormData] = useState({
@@ -75,142 +82,127 @@ export default function EmployeeRegister() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-6 sm:py-12 px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 sm:p-8 text-center">
-          <div className="flex justify-end mb-4">
-            <LanguageSwitcher />
-          </div>
-          <div className="mb-6">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 sm:w-8 sm:h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center py-6 sm:py-12 px-4">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <div className="flex justify-end mb-2">
+              <LanguageSwitcher />
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+          </CardHeader>
+          <CardContent className="text-center">
+            <div className="flex justify-center mb-4">
+              <CheckCircle2 className="w-16 h-16 text-green-600" />
+            </div>
+            <CardTitle className="mb-2">
               {t.registrationComplete}
-            </h1>
-            <p className="text-sm sm:text-base text-gray-600">
+            </CardTitle>
+            <CardDescription>
               {t.accountCreatedRedirect}
-            </p>
-          </div>
-        </div>
+            </CardDescription>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-6 sm:py-12 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 sm:p-8">
-        <div className="flex justify-end mb-4">
-          <LanguageSwitcher />
-        </div>
-
-        <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center py-6 sm:py-12 px-4">
+      <Card className="max-w-md w-full">
+        <CardHeader className="space-y-1">
+          <div className="flex justify-end mb-2">
+            <LanguageSwitcher />
+          </div>
+          <CardTitle className="text-2xl sm:text-3xl text-center">
             {t.employeeRegister}
-          </h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-2">
+          </CardTitle>
+          <CardDescription className="text-center">
             {t.employeeRegisterSubtitle}
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-              {t.name}
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder={t.namePlaceholderExample}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              {t.email}
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder={t.emailPlaceholder}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              {t.password}
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              minLength={6}
-              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder={t.minimumCharacters}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-              {t.confirmPassword}
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-              minLength={6}
-              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder={t.repeatPassword}
-            />
-          </div>
-
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded text-sm sm:text-base">
-              {error}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">{t.name}</Label>
+              <Input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+                placeholder={t.namePlaceholderExample}
+              />
             </div>
-          )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2.5 sm:py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium"
-          >
-            {loading ? t.registering : t.createAccount}
-          </button>
-        </form>
+            <div className="space-y-2">
+              <Label htmlFor="email">{t.email}</Label>
+              <Input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                placeholder={t.emailPlaceholder}
+              />
+            </div>
 
-        <div className="mt-4 sm:mt-6 text-center">
-          <p className="text-sm sm:text-base text-gray-600">
-            {t.alreadyHaveAccount}{' '}
-            <a href="/employee/login" className="text-blue-600 hover:underline">
-              {t.login}
-            </a>
-          </p>
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">{t.password}</Label>
+              <Input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                minLength={6}
+                placeholder={t.minimumCharacters}
+              />
+            </div>
 
-        <div className="mt-3 sm:mt-4 text-center">
-          <a href="/" className="text-blue-600 hover:underline text-sm">
-            {t.backToHome}
-          </a>
-        </div>
-      </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">{t.confirmPassword}</Label>
+              <Input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                minLength={6}
+                placeholder={t.repeatPassword}
+              />
+            </div>
+
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full"
+            >
+              {loading ? t.registering : t.createAccount}
+            </Button>
+          </form>
+
+          <div className="mt-6 text-center space-y-2">
+            <p className="text-sm text-muted-foreground">
+              {t.alreadyHaveAccount}{' '}
+              <Link href="/employee/login" className="text-primary hover:underline font-medium">
+                {t.login}
+              </Link>
+            </p>
+            <Link href="/" className="text-primary hover:underline text-sm block">
+              {t.backToHome}
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

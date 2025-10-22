@@ -4,6 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import Link from 'next/link';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -49,73 +55,67 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center py-6 sm:py-12 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 sm:p-8">
-        <div className="flex justify-end mb-4">
-          <LanguageSwitcher />
-        </div>
-
-        <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center py-6 sm:py-12 px-4">
+      <Card className="max-w-md w-full">
+        <CardHeader className="space-y-1">
+          <div className="flex justify-end mb-2">
+            <LanguageSwitcher />
+          </div>
+          <CardTitle className="text-2xl sm:text-3xl text-center">
             {t.adminLogin}
-          </h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-2">
+          </CardTitle>
+          <CardDescription className="text-center">
             {t.adminLoginSubtitle}
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              {t.email}
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder={t.adminEmailPlaceholder}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              {t.password}
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder={t.adminPasswordPlaceholder}
-            />
-          </div>
-
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded text-sm sm:text-base">
-              {error}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">{t.email}</Label>
+              <Input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder={t.adminEmailPlaceholder}
+              />
             </div>
-          )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-green-600 text-white py-2.5 sm:py-3 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium"
-          >
-            {loading ? t.loggingIn : t.login}
-          </button>
-        </form>
+            <div className="space-y-2">
+              <Label htmlFor="password">{t.password}</Label>
+              <Input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder={t.adminPasswordPlaceholder}
+              />
+            </div>
 
-        <div className="mt-4 sm:mt-6 text-center">
-          <a href="/" className="text-green-600 hover:underline text-sm sm:text-base">
-            {t.backToHome}
-          </a>
-        </div>
-      </div>
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-emerald-600 hover:bg-emerald-700"
+            >
+              {loading ? t.loggingIn : t.login}
+            </Button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <Link href="/" className="text-primary hover:underline text-sm">
+              {t.backToHome}
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
