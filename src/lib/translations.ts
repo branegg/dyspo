@@ -185,6 +185,10 @@ export interface Translations {
   // Color legend
   colorLegend: string;
   you: string;
+
+  // Employee list sections
+  administrators: string;
+  employees: string;
 }
 
 export const translations: Record<string, Translations> = {
@@ -377,7 +381,11 @@ export const translations: Record<string, Translations> = {
 
     // Color legend
     colorLegend: 'Legenda kolorów',
-    you: 'Ty'
+    you: 'Ty',
+
+    // Employee list sections
+    administrators: 'Administratorzy',
+    employees: 'Pracownicy'
   },
 
   en: {
@@ -569,6 +577,10 @@ export const translations: Record<string, Translations> = {
 
     // Color legend
     colorLegend: 'Color Legend',
-    you: 'You'
+    you: 'You',
+
+    // Employee list sections
+    administrators: 'Administrators',
+    employees: 'Employees'
   }
 };

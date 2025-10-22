@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
     const db = await getDatabase();
 
     const employees = await db.collection<User>('users')
-      .find({ role: 'employee' })
+      .find({})
       .project({ hashedPassword: 0 })
       .toArray();
 

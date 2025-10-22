@@ -862,159 +862,67 @@ export default function AdminDashboard() {
 
         <div className="bg-white rounded-lg shadow-lg p-3 sm:p-6 mt-6">
           <div className="mb-4">
-            <h3 className="text-lg sm:text-xl font-bold">Lista Pracowników ({employees.length})</h3>
+            <h3 className="text-lg sm:text-xl font-bold">{t.employeeList} ({employees.length})</h3>
             <p className="text-xs sm:text-sm text-gray-600 mt-1">
-              {t.assignedDays} / {t.assignedHours} dla: {t.months[currentDate.getMonth()]} {currentDate.getFullYear()}
+              {t.assignedDays} / {t.assignedHours} {t.scheduleForMonth} {t.months[currentDate.getMonth()]} {currentDate.getFullYear()}
             </p>
           </div>
           {employees.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              Brak zarejestrowanych pracowników
+              {t.noRegisteredEmployees}
             </div>
           ) : (
             <>
               {/* Mobile Card View */}
-              <div className="block lg:hidden space-y-4">
-                {employees.map((employee) => {
-                  const stats = getEmployeeAssignmentStats(employee._id || '');
-                  const employeeAvailability = availability.find(a => a.userId === employee._id);
-                  const hasAvailability = !!employeeAvailability;
-                  const isLocked = employeeAvailability?.isLocked !== undefined ? employeeAvailability.isLocked : true;
+              <div className="block lg:hidden space-y-6">
+                {/* Administrators Section */}
+                {employees.filter(e => e.role === 'admin').length > 0 && (
+                  <div>
+                    <h4 className="text-md font-bold text-gray-800 mb-3 pb-2 border-b-2 border-purple-300">
+                      {t.administrators} ({employees.filter(e => e.role === 'admin').length})
+                    </h4>
+                    <div className="space-y-4">
+                      {employees.filter(e => e.role === 'admin').map((employee) => {
+                        const stats = getEmployeeAssignmentStats(employee._id || '');
+                        const employeeAvailability = availability.find(a => a.userId === employee._id);
+                        const hasAvailability = !!employeeAvailability;
+                        const isLocked = employeeAvailability?.isLocked !== undefined ? employeeAvailability.isLocked : true;
 
-                  return (
-                    <div key={employee._id} className="border rounded-lg p-4 bg-white shadow-sm">
-                      <div className="mb-3">
-                        <h4 className="font-bold text-gray-900">{employee.name}</h4>
-                        <p className="text-sm text-gray-600">{employee.email}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {t.registrationDate}: {new Date(employee.createdAt).toLocaleDateString('pl-PL')}
-                        </p>
-                      </div>
+                        return (
+                          <div key={employee._id} className="border rounded-lg p-4 bg-purple-50 shadow-sm">
+                            <div className="mb-3">
+                              <h5 className="font-bold text-gray-900">{employee.name}</h5>
+                              <p className="text-sm text-gray-600">{employee.email}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {t.registrationDate}: {new Date(employee.createdAt).toLocaleDateString('pl-PL')}
+                              </p>
+                            </div>
 
-                      <div className="flex gap-3 mb-3">
-                        <div className="flex-1">
-                          <p className="text-xs text-gray-600 mb-1">{t.assignedDays}</p>
-                          <span className={`inline-block w-full text-center px-3 py-2 rounded font-semibold ${
-                            stats.days > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
-                          }`}>
-                            {stats.days}
-                          </span>
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-xs text-gray-600 mb-1">{t.assignedHours}</p>
-                          <span className={`inline-block w-full text-center px-3 py-2 rounded font-semibold ${
-                            stats.hours > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                          }`}>
-                            {stats.hours} {t.hoursUnit}
-                          </span>
-                        </div>
-                      </div>
+                            <div className="flex gap-3 mb-3">
+                              <div className="flex-1">
+                                <p className="text-xs text-gray-600 mb-1">{t.assignedDays}</p>
+                                <span className={`inline-block w-full text-center px-3 py-2 rounded font-semibold ${
+                                  stats.days > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {stats.days}
+                                </span>
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-xs text-gray-600 mb-1">{t.assignedHours}</p>
+                                <span className={`inline-block w-full text-center px-3 py-2 rounded font-semibold ${
+                                  stats.hours > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {stats.hours} {t.hoursUnit}
+                                </span>
+                              </div>
+                            </div>
 
-                      <div className="pt-3 border-t space-y-2">
-                        {hasAvailability && (
-                          isLocked ? (
-                            <button
-                              onClick={() => handleUnlockAvailability(employee._id || '')}
-                              className="w-full bg-orange-600 text-white px-3 py-2 rounded hover:bg-orange-700 text-sm"
-                              title={t.unlockAvailability}
-                            >
-                              🔓 Odblokuj
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleLockAvailability(employee._id || '')}
-                              className="w-full bg-yellow-600 text-white px-3 py-2 rounded hover:bg-yellow-700 text-sm"
-                              title={t.lockAvailability}
-                            >
-                              🔒 Zablokuj
-                            </button>
-                          )
-                        )}
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleEditEmployee(employee)}
-                            className="flex-1 bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm"
-                          >
-                            {t.edit}
-                          </button>
-                          <button
-                            onClick={() => handleDeleteEmployee(employee)}
-                            className="flex-1 bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 text-sm"
-                          >
-                            {t.delete}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Desktop Table View */}
-              <div className="hidden lg:block overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr>
-                      <th className="border p-3 bg-gray-50 text-left font-semibold">
-                        {t.name}
-                      </th>
-                      <th className="border p-3 bg-gray-50 text-left font-semibold">
-                        {t.email}
-                      </th>
-                      <th className="border p-3 bg-gray-50 text-center font-semibold">
-                        {t.registrationDate}
-                      </th>
-                      <th className="border p-3 bg-gray-50 text-center font-semibold">
-                        {t.assignedDays}
-                      </th>
-                      <th className="border p-3 bg-gray-50 text-center font-semibold">
-                        {t.assignedHours}
-                      </th>
-                      <th className="border p-3 bg-gray-50 text-center font-semibold">
-                        {t.actions}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {employees.map((employee) => {
-                      const stats = getEmployeeAssignmentStats(employee._id || '');
-                      // Check if employee has availability for current month
-                      const employeeAvailability = availability.find(a => a.userId === employee._id);
-                      const hasAvailability = !!employeeAvailability;
-                      const isLocked = employeeAvailability?.isLocked !== undefined ? employeeAvailability.isLocked : true;
-
-                      return (
-                        <tr key={employee._id} className="hover:bg-gray-50">
-                          <td className="border p-3 font-medium">
-                            {employee.name}
-                          </td>
-                          <td className="border p-3 text-gray-600">
-                            {employee.email}
-                          </td>
-                          <td className="border p-3 text-center text-gray-600">
-                            {new Date(employee.createdAt).toLocaleDateString('pl-PL')}
-                          </td>
-                          <td className="border p-3 text-center">
-                            <span className={`inline-block px-3 py-1 rounded font-semibold ${
-                              stats.days > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
-                            }`}>
-                              {stats.days}
-                            </span>
-                          </td>
-                          <td className="border p-3 text-center">
-                            <span className={`inline-block px-3 py-1 rounded font-semibold ${
-                              stats.hours > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                            }`}>
-                              {stats.hours} {t.hoursUnit}
-                            </span>
-                          </td>
-                          <td className="border p-3 text-center">
-                            <div className="flex gap-2 justify-center flex-wrap">
+                            <div className="pt-3 border-t space-y-2">
                               {hasAvailability && (
                                 isLocked ? (
                                   <button
                                     onClick={() => handleUnlockAvailability(employee._id || '')}
-                                    className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 text-sm whitespace-nowrap"
+                                    className="w-full bg-orange-600 text-white px-3 py-2 rounded hover:bg-orange-700 text-sm"
                                     title={t.unlockAvailability}
                                   >
                                     🔓 Odblokuj
@@ -1022,32 +930,329 @@ export default function AdminDashboard() {
                                 ) : (
                                   <button
                                     onClick={() => handleLockAvailability(employee._id || '')}
-                                    className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 text-sm whitespace-nowrap"
+                                    className="w-full bg-yellow-600 text-white px-3 py-2 rounded hover:bg-yellow-700 text-sm"
                                     title={t.lockAvailability}
                                   >
                                     🔒 Zablokuj
                                   </button>
                                 )
                               )}
-                              <button
-                                onClick={() => handleEditEmployee(employee)}
-                                className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
-                              >
-                                {t.edit}
-                              </button>
-                              <button
-                                onClick={() => handleDeleteEmployee(employee)}
-                                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm"
-                              >
-                                {t.delete}
-                              </button>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleEditEmployee(employee)}
+                                  className="flex-1 bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm"
+                                >
+                                  {t.edit}
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteEmployee(employee)}
+                                  className="flex-1 bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 text-sm"
+                                >
+                                  {t.delete}
+                                </button>
+                              </div>
                             </div>
-                          </td>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Employees Section */}
+                {employees.filter(e => e.role === 'employee').length > 0 && (
+                  <div>
+                    <h4 className="text-md font-bold text-gray-800 mb-3 pb-2 border-b-2 border-blue-300">
+                      {t.employees} ({employees.filter(e => e.role === 'employee').length})
+                    </h4>
+                    <div className="space-y-4">
+                      {employees.filter(e => e.role === 'employee').map((employee) => {
+                        const stats = getEmployeeAssignmentStats(employee._id || '');
+                        const employeeAvailability = availability.find(a => a.userId === employee._id);
+                        const hasAvailability = !!employeeAvailability;
+                        const isLocked = employeeAvailability?.isLocked !== undefined ? employeeAvailability.isLocked : true;
+
+                        return (
+                          <div key={employee._id} className="border rounded-lg p-4 bg-white shadow-sm">
+                            <div className="mb-3">
+                              <h5 className="font-bold text-gray-900">{employee.name}</h5>
+                              <p className="text-sm text-gray-600">{employee.email}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {t.registrationDate}: {new Date(employee.createdAt).toLocaleDateString('pl-PL')}
+                              </p>
+                            </div>
+
+                            <div className="flex gap-3 mb-3">
+                              <div className="flex-1">
+                                <p className="text-xs text-gray-600 mb-1">{t.assignedDays}</p>
+                                <span className={`inline-block w-full text-center px-3 py-2 rounded font-semibold ${
+                                  stats.days > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {stats.days}
+                                </span>
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-xs text-gray-600 mb-1">{t.assignedHours}</p>
+                                <span className={`inline-block w-full text-center px-3 py-2 rounded font-semibold ${
+                                  stats.hours > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {stats.hours} {t.hoursUnit}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="pt-3 border-t space-y-2">
+                              {hasAvailability && (
+                                isLocked ? (
+                                  <button
+                                    onClick={() => handleUnlockAvailability(employee._id || '')}
+                                    className="w-full bg-orange-600 text-white px-3 py-2 rounded hover:bg-orange-700 text-sm"
+                                    title={t.unlockAvailability}
+                                  >
+                                    🔓 Odblokuj
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => handleLockAvailability(employee._id || '')}
+                                    className="w-full bg-yellow-600 text-white px-3 py-2 rounded hover:bg-yellow-700 text-sm"
+                                    title={t.lockAvailability}
+                                  >
+                                    🔒 Zablokuj
+                                  </button>
+                                )
+                              )}
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleEditEmployee(employee)}
+                                  className="flex-1 bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm"
+                                >
+                                  {t.edit}
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteEmployee(employee)}
+                                  className="flex-1 bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 text-sm"
+                                >
+                                  {t.delete}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden lg:block overflow-x-auto space-y-6">
+                {/* Administrators Table */}
+                {employees.filter(e => e.role === 'admin').length > 0 && (
+                  <div>
+                    <h4 className="text-lg font-bold text-gray-800 mb-3 pb-2 border-b-2 border-purple-300">
+                      {t.administrators} ({employees.filter(e => e.role === 'admin').length})
+                    </h4>
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr>
+                          <th className="border p-3 bg-purple-50 text-left font-semibold">
+                            {t.name}
+                          </th>
+                          <th className="border p-3 bg-purple-50 text-left font-semibold">
+                            {t.email}
+                          </th>
+                          <th className="border p-3 bg-purple-50 text-center font-semibold">
+                            {t.registrationDate}
+                          </th>
+                          <th className="border p-3 bg-purple-50 text-center font-semibold">
+                            {t.assignedDays}
+                          </th>
+                          <th className="border p-3 bg-purple-50 text-center font-semibold">
+                            {t.assignedHours}
+                          </th>
+                          <th className="border p-3 bg-purple-50 text-center font-semibold">
+                            {t.actions}
+                          </th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                      </thead>
+                      <tbody>
+                        {employees.filter(e => e.role === 'admin').map((employee) => {
+                          const stats = getEmployeeAssignmentStats(employee._id || '');
+                          const employeeAvailability = availability.find(a => a.userId === employee._id);
+                          const hasAvailability = !!employeeAvailability;
+                          const isLocked = employeeAvailability?.isLocked !== undefined ? employeeAvailability.isLocked : true;
+
+                          return (
+                            <tr key={employee._id} className="hover:bg-purple-50">
+                              <td className="border p-3 font-medium">
+                                {employee.name}
+                              </td>
+                              <td className="border p-3 text-gray-600">
+                                {employee.email}
+                              </td>
+                              <td className="border p-3 text-center text-gray-600">
+                                {new Date(employee.createdAt).toLocaleDateString('pl-PL')}
+                              </td>
+                              <td className="border p-3 text-center">
+                                <span className={`inline-block px-3 py-1 rounded font-semibold ${
+                                  stats.days > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {stats.days}
+                                </span>
+                              </td>
+                              <td className="border p-3 text-center">
+                                <span className={`inline-block px-3 py-1 rounded font-semibold ${
+                                  stats.hours > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {stats.hours} {t.hoursUnit}
+                                </span>
+                              </td>
+                              <td className="border p-3 text-center">
+                                <div className="flex gap-2 justify-center flex-wrap">
+                                  {hasAvailability && (
+                                    isLocked ? (
+                                      <button
+                                        onClick={() => handleUnlockAvailability(employee._id || '')}
+                                        className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 text-sm whitespace-nowrap"
+                                        title={t.unlockAvailability}
+                                      >
+                                        🔓 Odblokuj
+                                      </button>
+                                    ) : (
+                                      <button
+                                        onClick={() => handleLockAvailability(employee._id || '')}
+                                        className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 text-sm whitespace-nowrap"
+                                        title={t.lockAvailability}
+                                      >
+                                        🔒 Zablokuj
+                                      </button>
+                                    )
+                                  )}
+                                  <button
+                                    onClick={() => handleEditEmployee(employee)}
+                                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
+                                  >
+                                    {t.edit}
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteEmployee(employee)}
+                                    className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm"
+                                  >
+                                    {t.delete}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Employees Table */}
+                {employees.filter(e => e.role === 'employee').length > 0 && (
+                  <div>
+                    <h4 className="text-lg font-bold text-gray-800 mb-3 pb-2 border-b-2 border-blue-300">
+                      {t.employees} ({employees.filter(e => e.role === 'employee').length})
+                    </h4>
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr>
+                          <th className="border p-3 bg-gray-50 text-left font-semibold">
+                            {t.name}
+                          </th>
+                          <th className="border p-3 bg-gray-50 text-left font-semibold">
+                            {t.email}
+                          </th>
+                          <th className="border p-3 bg-gray-50 text-center font-semibold">
+                            {t.registrationDate}
+                          </th>
+                          <th className="border p-3 bg-gray-50 text-center font-semibold">
+                            {t.assignedDays}
+                          </th>
+                          <th className="border p-3 bg-gray-50 text-center font-semibold">
+                            {t.assignedHours}
+                          </th>
+                          <th className="border p-3 bg-gray-50 text-center font-semibold">
+                            {t.actions}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {employees.filter(e => e.role === 'employee').map((employee) => {
+                          const stats = getEmployeeAssignmentStats(employee._id || '');
+                          const employeeAvailability = availability.find(a => a.userId === employee._id);
+                          const hasAvailability = !!employeeAvailability;
+                          const isLocked = employeeAvailability?.isLocked !== undefined ? employeeAvailability.isLocked : true;
+
+                          return (
+                            <tr key={employee._id} className="hover:bg-gray-50">
+                              <td className="border p-3 font-medium">
+                                {employee.name}
+                              </td>
+                              <td className="border p-3 text-gray-600">
+                                {employee.email}
+                              </td>
+                              <td className="border p-3 text-center text-gray-600">
+                                {new Date(employee.createdAt).toLocaleDateString('pl-PL')}
+                              </td>
+                              <td className="border p-3 text-center">
+                                <span className={`inline-block px-3 py-1 rounded font-semibold ${
+                                  stats.days > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {stats.days}
+                                </span>
+                              </td>
+                              <td className="border p-3 text-center">
+                                <span className={`inline-block px-3 py-1 rounded font-semibold ${
+                                  stats.hours > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {stats.hours} {t.hoursUnit}
+                                </span>
+                              </td>
+                              <td className="border p-3 text-center">
+                                <div className="flex gap-2 justify-center flex-wrap">
+                                  {hasAvailability && (
+                                    isLocked ? (
+                                      <button
+                                        onClick={() => handleUnlockAvailability(employee._id || '')}
+                                        className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 text-sm whitespace-nowrap"
+                                        title={t.unlockAvailability}
+                                      >
+                                        🔓 Odblokuj
+                                      </button>
+                                    ) : (
+                                      <button
+                                        onClick={() => handleLockAvailability(employee._id || '')}
+                                        className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 text-sm whitespace-nowrap"
+                                        title={t.lockAvailability}
+                                      >
+                                        🔒 Zablokuj
+                                      </button>
+                                    )
+                                  )}
+                                  <button
+                                    onClick={() => handleEditEmployee(employee)}
+                                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
+                                  >
+                                    {t.edit}
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteEmployee(employee)}
+                                    className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm"
+                                  >
+                                    {t.delete}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </>
           )}
