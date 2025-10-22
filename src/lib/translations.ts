@@ -127,6 +127,8 @@ export interface Translations {
   newPassword: string;
   leaveBlankToKeepPassword: string;
   actions: string;
+  addEmployeeDescription: string;
+  editEmployeeDescription: string;
 
   // Delete employee
   confirmDelete: string;
@@ -324,6 +326,8 @@ export const translations: Record<string, Translations> = {
     newPassword: 'Nowe hasło',
     leaveBlankToKeepPassword: 'Zostaw puste aby zachować obecne hasło',
     actions: 'Akcje',
+    addEmployeeDescription: 'Utwórz nowe konto pracownika z tymczasowymi danymi dostępu',
+    editEmployeeDescription: 'Zaktualizuj informacje o pracowniku i opcjonalnie zresetuj hasło',
 
     // Delete employee
     confirmDelete: 'Czy na pewno chcesz usunąć pracownika',
@@ -520,6 +524,8 @@ export const translations: Record<string, Translations> = {
     newPassword: 'New password',
     leaveBlankToKeepPassword: 'Leave blank to keep current password',
     actions: 'Actions',
+    addEmployeeDescription: 'Create a new employee account with temporary credentials',
+    editEmployeeDescription: 'Update employee information and optionally reset password',
 
     // Delete employee
     confirmDelete: 'Are you sure you want to delete employee',

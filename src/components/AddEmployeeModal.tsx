@@ -76,7 +76,7 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
         <DialogHeader>
           <DialogTitle>{t.addEmployee}</DialogTitle>
           <DialogDescription>
-            Create a new employee account with temporary credentials.
+            {t.addEmployeeDescription}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">

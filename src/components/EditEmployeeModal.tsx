@@ -93,7 +93,7 @@ export default function EditEmployeeModal({ isOpen, onClose, onSuccess, employee
         <DialogHeader>
           <DialogTitle>{t.editEmployee}</DialogTitle>
           <DialogDescription>
-            Update employee information and optionally reset password.
+            {t.editEmployeeDescription}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
