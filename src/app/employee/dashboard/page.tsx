@@ -59,6 +59,7 @@ export default function EmployeeDashboard() {
     // Load employees list if admin
     if (parsedUser.role === 'admin') {
       loadEmployees(token);
+      loadAvailability(token);
     } else {
       loadAvailability(token);
       checkNextMonthAvailability(token);
@@ -88,12 +89,6 @@ export default function EmployeeDashboard() {
       const data = await response.json();
       if (data.employees) {
         setEmployees(data.employees);
-        // Set first employee as default
-        if (data.employees.length > 0) {
-          const firstEmployeeId = data.employees[0]._id.toString();
-          setSelectedEmployeeId(firstEmployeeId);
-          setViewingEmployee(data.employees[0]);
-        }
       }
     } catch (error) {
       console.error('Error loading employees:', error);
@@ -371,41 +366,50 @@ export default function EmployeeDashboard() {
                   {t.selectEmployee}
                 </label>
                 <select
-                  value={selectedEmployeeId || ''}
-                  onChange={(e) => handleEmployeeChange(e.target.value)}
+                  value={selectedEmployeeId || 'myself'}
+                  onChange={(e) => handleEmployeeChange(e.target.value === 'myself' ? '' : e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  {employees.map((emp) => (
+                  <option value="myself">{t.myself} ({user?.name})</option>
+                  {employees.filter(emp => emp._id.toString() !== user?.id).map((emp) => (
                     <option key={emp._id} value={emp._id.toString()}>
                       {emp.name} ({emp.email})
                     </option>
                   ))}
                 </select>
               </div>
-              {isLocked ? (
-                <button
-                  onClick={handleAdminUnlock}
-                  className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 text-sm whitespace-nowrap w-full sm:w-auto"
-                >
-                  🔓 {t.unlockAvailability}
-                </button>
-              ) : (
-                <button
-                  onClick={handleAdminLock}
-                  className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 text-sm whitespace-nowrap w-full sm:w-auto"
-                >
-                  🔒 {t.lockAvailability}
-                </button>
+              {selectedEmployeeId && (
+                <>
+                  {isLocked ? (
+                    <button
+                      onClick={handleAdminUnlock}
+                      className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 text-sm whitespace-nowrap w-full sm:w-auto"
+                    >
+                      🔓 {t.unlockAvailability}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleAdminLock}
+                      className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 text-sm whitespace-nowrap w-full sm:w-auto"
+                    >
+                      🔒 {t.lockAvailability}
+                    </button>
+                  )}
+                </>
               )}
             </div>
-            {isLocked ? (
-              <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
-                <span className="font-semibold">🔒 {t.locked}</span> - {t.availabilityLockedMessage}
-              </div>
-            ) : (
-              <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-800">
-                <span className="font-semibold">🔓 {t.unlocked}</span> - Pracownik może edytować dyspozycyjność
-              </div>
+            {selectedEmployeeId && (
+              <>
+                {isLocked ? (
+                  <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+                    <span className="font-semibold">🔒 {t.locked}</span> - {t.availabilityLockedMessage}
+                  </div>
+                ) : (
+                  <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-800">
+                    <span className="font-semibold">🔓 {t.unlocked}</span> - Pracownik może edytować dyspozycyjność
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
@@ -505,7 +509,7 @@ export default function EmployeeDashboard() {
               year={currentDate.getFullYear()}
               month={currentDate.getMonth() + 1}
               selectedDays={selectedDays}
-              onDayToggle={user?.role === 'admin' || isLocked ? () => {} : handleDayToggle}
+              onDayToggle={(user?.role === 'admin' && selectedEmployeeId) || isLocked ? () => {} : handleDayToggle}
             />
 
             <div className="mt-4 sm:mt-6 text-center">
@@ -513,7 +517,7 @@ export default function EmployeeDashboard() {
                 {t.selectedDays}: {selectedDays.length > 0 ? selectedDays.join(', ') : t.noSelectedDays}
               </p>
 
-              {user?.role !== 'admin' && (
+              {!(user?.role === 'admin' && selectedEmployeeId) && (
                 <>
                   {isLocked && (
                     <div className="mb-4 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">

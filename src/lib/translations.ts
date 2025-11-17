@@ -167,6 +167,7 @@ export interface Translations {
   viewAsEmployee: string;
   selectEmployee: string;
   viewingAs: string;
+  myself: string;
 
   // Availability locking
   availabilityLocked: string;
@@ -364,6 +365,7 @@ export const translations: Record<string, Translations> = {
     viewAsEmployee: 'Wyświetl jako pracownik',
     selectEmployee: 'Wybierz pracownika',
     viewingAs: 'Wyświetlasz jako',
+    myself: 'Ja (moja dyspozycyjność)',
 
     // Availability locking
     availabilityLocked: 'Dyspozycyjność zablokowana',
@@ -560,6 +562,7 @@ export const translations: Record<string, Translations> = {
     viewAsEmployee: 'View as employee',
     selectEmployee: 'Select employee',
     viewingAs: 'Viewing as',
+    myself: 'Myself (my availability)',
 
     // Availability locking
     availabilityLocked: 'Availability locked',

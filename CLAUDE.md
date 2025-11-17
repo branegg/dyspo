@@ -229,3 +229,4 @@ curl -X POST http://localhost:3000/api/auth/register \
 - Bagiety location: No assignments on Tuesdays (day of week check required)
 - Widok location: Can be assigned any day
 - Only assign employees who marked themselves available for that day
+- use vercel cli whenever necessary

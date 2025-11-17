@@ -58,11 +58,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Nieprawidłowy token' }, { status: 401 });
     }
 
-    // Only employees can save their own availability (not admins)
-    if (decoded.role !== 'employee') {
-      return NextResponse.json({ error: 'Tylko pracownicy mogą zapisywać swoją dyspozycyjność' }, { status: 403 });
-    }
-
     const { year, month, availableDays } = await request.json();
 
     if (!year || !month || !Array.isArray(availableDays)) {
