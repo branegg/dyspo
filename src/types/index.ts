@@ -62,3 +62,23 @@ export interface DayAssignmentWithUsers {
     email: string;
   };
 }
+
+export interface HourLog {
+  _id?: string;
+  userId: string;
+  year: number;
+  month: number;
+  day: number;
+  hours: number;
+  location: 'bagiety' | 'widok';
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface HourLogWithUser extends HourLog {
+  user: {
+    name: string;
+    email: string;
+  };
+}

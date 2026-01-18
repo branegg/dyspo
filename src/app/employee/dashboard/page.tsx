@@ -7,8 +7,10 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Calendar from '@/components/Calendar';
 import ScheduleDisplay from '@/components/ScheduleDisplay';
 import BagietyLoader from '@/components/BagietyLoader';
+import HourLogForm from '@/components/HourLogForm';
+import { HourLog } from '@/types';
 
-type TabType = 'availability' | 'schedule' | 'mySchedule';
+type TabType = 'availability' | 'schedule' | 'mySchedule' | 'hours';
 
 export default function EmployeeDashboard() {
   const [user, setUser] = useState<any>(null);
@@ -35,6 +37,10 @@ export default function EmployeeDashboard() {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
   const [viewingEmployee, setViewingEmployee] = useState<any>(null);
   const [isLocked, setIsLocked] = useState(false);
+  const [hourLogs, setHourLogs] = useState<HourLog[]>([]);
+  const [showHourLogModal, setShowHourLogModal] = useState(false);
+  const [editingHourLog, setEditingHourLog] = useState<HourLog | null>(null);
+  const [hourLogMessage, setHourLogMessage] = useState('');
   const router = useRouter();
   const { t } = useLanguage();
 
@@ -60,8 +66,10 @@ export default function EmployeeDashboard() {
     if (parsedUser.role === 'admin') {
       loadEmployees(token);
       loadAvailability(token);
+      loadHourLogs(token);
     } else {
       loadAvailability(token);
+      loadHourLogs(token);
       checkNextMonthAvailability(token);
     }
   }, [currentDate]);
@@ -126,6 +134,28 @@ export default function EmployeeDashboard() {
       console.error('Error loading availability:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadHourLogs = async (token: string) => {
+    try {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+
+      const response = await fetch(`/api/hours?year=${year}&month=${month}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (data.hourLogs) {
+        setHourLogs(data.hourLogs);
+      } else {
+        setHourLogs([]);
+      }
+    } catch (error) {
+      console.error('Error loading hour logs:', error);
     }
   };
 
@@ -313,6 +343,62 @@ export default function EmployeeDashboard() {
     setLoading(true);
   };
 
+  const handleHourLogSuccess = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      loadHourLogs(token);
+    }
+    setHourLogMessage(editingHourLog ? t.hourLogUpdated : t.hourLogSaved);
+    setEditingHourLog(null);
+    setTimeout(() => setHourLogMessage(''), 3000);
+  };
+
+  const handleEditHourLog = (log: HourLog) => {
+    setEditingHourLog(log);
+    setShowHourLogModal(true);
+  };
+
+  const handleDeleteHourLog = async (logId: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/hours?id=${logId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setHourLogMessage(t.hourLogDeleted);
+        loadHourLogs(token!);
+        setTimeout(() => setHourLogMessage(''), 3000);
+      } else {
+        const data = await response.json();
+        setHourLogMessage(data.error || t.hourLogError);
+      }
+    } catch {
+      setHourLogMessage(t.connectionError);
+    }
+  };
+
+  const getDaysInMonth = (year: number, month: number) => {
+    return new Date(year, month, 0).getDate();
+  };
+
+  const calculateTotalHours = () => {
+    return hourLogs.reduce((sum, log) => sum + log.hours, 0);
+  };
+
+  const calculateHoursByLocation = () => {
+    const bagietyHours = hourLogs
+      .filter((log) => log.location === 'bagiety')
+      .reduce((sum, log) => sum + log.hours, 0);
+    const widokHours = hourLogs
+      .filter((log) => log.location === 'widok')
+      .reduce((sum, log) => sum + log.hours, 0);
+    return { bagiety: bagietyHours, widok: widokHours };
+  };
+
   if (loading || !t) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -484,6 +570,16 @@ export default function EmployeeDashboard() {
             >
               {t.workSchedule}
             </button>
+            <button
+              onClick={() => setActiveTab('hours')}
+              className={`flex-1 px-2 sm:px-6 py-3 sm:py-4 text-center font-semibold transition-colors text-xs sm:text-base ${
+                activeTab === 'hours'
+                  ? 'bg-blue-600 text-white border-b-2 border-blue-600'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {t.hourLogging}
+            </button>
           </div>
         </div>
 
@@ -579,7 +675,7 @@ export default function EmployeeDashboard() {
               myScheduleOnly={true}
             />
           </div>
-        ) : (
+        ) : activeTab === 'schedule' ? (
           <div className="bg-white rounded-b-lg shadow-lg p-3 sm:p-6">
             <div className="flex justify-between items-center mb-4 sm:mb-6 gap-2">
               <button
@@ -604,7 +700,189 @@ export default function EmployeeDashboard() {
               myScheduleOnly={false}
             />
           </div>
-        )}
+        ) : activeTab === 'hours' ? (
+          <div className="bg-white rounded-b-lg shadow-lg p-3 sm:p-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-2">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleMonthChange('prev')}
+                  className="bg-gray-500 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-gray-600 text-xs sm:text-base whitespace-nowrap"
+                >
+                  {t.previousMonth}
+                </button>
+                <button
+                  onClick={() => handleMonthChange('next')}
+                  className="bg-gray-500 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-gray-600 text-xs sm:text-base whitespace-nowrap"
+                >
+                  {t.nextMonth}
+                </button>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingHourLog(null);
+                  setShowHourLogModal(true);
+                }}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm sm:text-base w-full sm:w-auto"
+              >
+                + {t.addHourLog}
+              </button>
+            </div>
+
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
+              {t.hourLogHistory} - {t.months[currentDate.getMonth()]} {currentDate.getFullYear()}
+            </h2>
+
+            {hourLogMessage && (
+              <div
+                className={`mb-4 p-3 rounded text-sm sm:text-base ${
+                  hourLogMessage.includes(t.hourLogSaved) ||
+                  hourLogMessage.includes(t.hourLogUpdated) ||
+                  hourLogMessage.includes(t.hourLogDeleted)
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-red-100 text-red-700'
+                }`}
+              >
+                {hourLogMessage}
+              </div>
+            )}
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              <div className="bg-blue-50 rounded-lg p-4 text-center">
+                <p className="text-sm text-gray-600">{t.totalHoursMonth}</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {calculateTotalHours()} {t.hoursUnit}
+                </p>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-4 text-center">
+                <p className="text-sm text-gray-600">{t.bagiety}</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {calculateHoursByLocation().bagiety} {t.hoursUnit}
+                </p>
+              </div>
+              <div className="bg-orange-50 rounded-lg p-4 text-center">
+                <p className="text-sm text-gray-600">{t.widok}</p>
+                <p className="text-2xl font-bold text-orange-600">
+                  {calculateHoursByLocation().widok} {t.hoursUnit}
+                </p>
+              </div>
+            </div>
+
+            {/* Hour Logs Table */}
+            {hourLogs.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold text-gray-700">
+                        {t.dateColumn}
+                      </th>
+                      <th className="px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold text-gray-700">
+                        {t.locationColumn}
+                      </th>
+                      <th className="px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold text-gray-700">
+                        {t.hoursColumn}
+                      </th>
+                      <th className="px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold text-gray-700 hidden sm:table-cell">
+                        {t.notesColumn}
+                      </th>
+                      <th className="px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold text-gray-700">
+                        {t.actions}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {hourLogs.map((log) => (
+                      <tr key={log._id} className="border-b hover:bg-gray-50">
+                        <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm">
+                          {log.day} {t.months[currentDate.getMonth()]}
+                        </td>
+                        <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm">
+                          <span
+                            className={`px-2 py-1 rounded text-xs font-semibold ${
+                              log.location === 'bagiety'
+                                ? 'bg-purple-100 text-purple-800'
+                                : 'bg-orange-100 text-orange-800'
+                            }`}
+                          >
+                            {log.location === 'bagiety' ? t.bagiety : t.widok}
+                          </span>
+                        </td>
+                        <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm font-semibold">
+                          {log.hours} {t.hoursUnit}
+                        </td>
+                        <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm text-gray-500 hidden sm:table-cell">
+                          {log.notes || '-'}
+                        </td>
+                        <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEditHourLog(log)}
+                              className="text-blue-600 hover:text-blue-800"
+                              title={t.edit}
+                            >
+                              <svg
+                                className="w-4 h-4 sm:w-5 sm:h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => log._id && handleDeleteHourLog(log._id)}
+                              className="text-red-600 hover:text-red-800"
+                              title={t.delete}
+                            >
+                              <svg
+                                className="w-4 h-4 sm:w-5 sm:h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">{t.noHourLogs}</div>
+            )}
+
+            {/* Hour Log Form Modal */}
+            <HourLogForm
+              isOpen={showHourLogModal}
+              onClose={() => {
+                setShowHourLogModal(false);
+                setEditingHourLog(null);
+              }}
+              onSuccess={handleHourLogSuccess}
+              year={currentDate.getFullYear()}
+              month={currentDate.getMonth() + 1}
+              daysInMonth={getDaysInMonth(
+                currentDate.getFullYear(),
+                currentDate.getMonth() + 1
+              )}
+              editingLog={editingHourLog}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   );
