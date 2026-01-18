@@ -190,6 +190,34 @@ export interface Translations {
   // Employee list sections
   administrators: string;
   employees: string;
+
+  // Hour logging
+  hourLogging: string;
+  logHours: string;
+  hoursWorked: string;
+  addHourLog: string;
+  editHourLog: string;
+  deleteHourLog: string;
+  hourLogSaved: string;
+  hourLogDeleted: string;
+  hourLogError: string;
+  noHourLogs: string;
+  selectDate: string;
+  selectLocation: string;
+  enterHours: string;
+  notesOptional: string;
+  totalHoursMonth: string;
+  hoursPerLocation: string;
+  dateColumn: string;
+  hoursColumn: string;
+  locationColumn: string;
+  notesColumn: string;
+  hourLogHistory: string;
+  addNewHourLog: string;
+  hoursMustBePositive: string;
+  dateRequired: string;
+  locationRequired: string;
+  hourLogUpdated: string;
 }
 
 export const translations: Record<string, Translations> = {
@@ -387,7 +415,35 @@ export const translations: Record<string, Translations> = {
 
     // Employee list sections
     administrators: 'Administratorzy',
-    employees: 'Pracownicy'
+    employees: 'Pracownicy',
+
+    // Hour logging
+    hourLogging: 'Godziny pracy',
+    logHours: 'Dodaj godziny',
+    hoursWorked: 'Przepracowane godziny',
+    addHourLog: 'Dodaj wpis',
+    editHourLog: 'Edytuj wpis',
+    deleteHourLog: 'Usuń wpis',
+    hourLogSaved: 'Godziny zostały zapisane!',
+    hourLogDeleted: 'Wpis został usunięty',
+    hourLogError: 'Błąd podczas zapisywania godzin',
+    noHourLogs: 'Brak wpisów godzin w tym miesiącu',
+    selectDate: 'Wybierz datę',
+    selectLocation: 'Wybierz lokalizację',
+    enterHours: 'Wpisz godziny',
+    notesOptional: 'Notatki (opcjonalnie)',
+    totalHoursMonth: 'Suma godzin w miesiącu',
+    hoursPerLocation: 'Godziny wg lokalizacji',
+    dateColumn: 'Data',
+    hoursColumn: 'Godziny',
+    locationColumn: 'Lokalizacja',
+    notesColumn: 'Notatki',
+    hourLogHistory: 'Historia godzin',
+    addNewHourLog: 'Dodaj nowy wpis',
+    hoursMustBePositive: 'Godziny muszą być większe od 0',
+    dateRequired: 'Data jest wymagana',
+    locationRequired: 'Lokalizacja jest wymagana',
+    hourLogUpdated: 'Wpis został zaktualizowany!'
   },
 
   en: {
@@ -584,6 +640,34 @@ export const translations: Record<string, Translations> = {
 
     // Employee list sections
     administrators: 'Administrators',
-    employees: 'Employees'
+    employees: 'Employees',
+
+    // Hour logging
+    hourLogging: 'Work Hours',
+    logHours: 'Log Hours',
+    hoursWorked: 'Hours Worked',
+    addHourLog: 'Add Entry',
+    editHourLog: 'Edit Entry',
+    deleteHourLog: 'Delete Entry',
+    hourLogSaved: 'Hours have been saved!',
+    hourLogDeleted: 'Entry has been deleted',
+    hourLogError: 'Error saving hours',
+    noHourLogs: 'No hour entries for this month',
+    selectDate: 'Select date',
+    selectLocation: 'Select location',
+    enterHours: 'Enter hours',
+    notesOptional: 'Notes (optional)',
+    totalHoursMonth: 'Total hours this month',
+    hoursPerLocation: 'Hours by location',
+    dateColumn: 'Date',
+    hoursColumn: 'Hours',
+    locationColumn: 'Location',
+    notesColumn: 'Notes',
+    hourLogHistory: 'Hour History',
+    addNewHourLog: 'Add New Entry',
+    hoursMustBePositive: 'Hours must be greater than 0',
+    dateRequired: 'Date is required',
+    locationRequired: 'Location is required',
+    hourLogUpdated: 'Entry has been updated!'
   }
 };
